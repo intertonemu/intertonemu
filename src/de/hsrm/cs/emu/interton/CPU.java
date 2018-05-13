@@ -1,0 +1,364 @@
+package de.hsrm.cs.emu.interton;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import de.hsrm.cs.emu.interton.exception.CpuInvalidLengthException;
+import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
+
+public class CPU {
+	
+	// Program counter
+	private static int pc=0;
+	
+	// Register 0 (ACC)
+	private static short r0=0;
+	
+	// Register 1
+	private static short r1=0;
+	
+	// Register 2
+	private static short r2=0;
+	
+	// Register 3
+	private static short r3=0;
+	
+	// Register 4
+	private static short r4=0;
+	
+	// Register 5
+	private static short r5=0;
+	
+	// Register 6
+	private static short r6=0;
+	
+	// Upper Program Status Register
+	private static short psu=0;
+	
+	// Lower Program Status Register
+	private static short psl=0;
+	
+	// Stack pointer
+	private static short sp=0;
+	
+	// hide constructor
+	private CPU() {
+		
+	}
+	
+	// is opcode invalid?
+	public static boolean isOpcodeInvalid(short opcode) {
+		//TODO probably easier to find a similarity on bit level
+		return 0x00==opcode
+			|| 0x10==opcode
+			|| 0x11==opcode
+			|| 0x90==opcode
+			|| 0x91==opcode
+			|| 0xB6==opcode
+			|| 0xB7==opcode
+			|| 0xC4==opcode
+			|| 0xC5==opcode
+			|| 0xC6==opcode
+			|| 0xC7==opcode;
+	}
+	
+	// is opcode valid?
+	public static boolean isOpcodeValid(short opcode) {
+		return !isOpcodeInvalid(opcode);
+	}
+	
+	public static short getByteLengthForOpcode(short opcode) {
+		if(0x00<=opcode && opcode<0x04
+				|| 0xC0<=opcode && opcode<0xC4
+				|| 0x80<=opcode && opcode<0x84
+				|| 0xA0<=opcode && opcode<0xA4
+				|| 0x94<=opcode && opcode<0x98
+				|| 0x40<=opcode && opcode<0x44
+				|| 0x60<=opcode && opcode<0x64
+				|| 0x20<=opcode && opcode<0x24
+				|| 0xE0<=opcode && opcode<0xE4
+				|| 0x50<=opcode && opcode<0x54
+				|| 0xD0<=opcode && opcode<0xD4
+				|| 0x14<=opcode && opcode<0x18
+				|| 0x34<=opcode && opcode<0x38
+				|| 0xF0<=opcode && opcode<0xF4
+				|| 0x70<=opcode && opcode<0x74
+				|| 0xB0<=opcode && opcode<0xB4
+				|| 0x30<=opcode && opcode<0x34
+				|| 0xD4<=opcode && opcode<0xD8
+				|| 0x54<=opcode && opcode<0x58
+				|| 0xC0==opcode
+				|| 0x92<=opcode && opcode<0x94
+				|| 0x12<=opcode && opcode<0x14) {
+			return 1;
+		}
+		else if(false//TODO
+				) {
+			return 2;
+		}
+		else if(false//TODO
+				) {
+			return 3;
+		}
+		else {
+			return -1;
+		}
+	}
+	
+	// returns if there is only one variant of the opcode
+	// e.g. opcode=0xC0 => true since there is only one variant of this opcode
+	// e.g. opcode=0x08 => false since there are four verions of this opcode
+	//             0x08 for r0
+	//             0x09 for r1
+	//             0x0A for r2
+	//             0x0B for r3
+	public static boolean isOpcodeUnique(short opcode) {
+		return 0x9B==opcode
+			|| 0x9F==opcode
+			|| 0xBB==opcode
+			|| 0xBF==opcode
+			|| 0x40==opcode 
+			|| 0xC0==opcode
+			|| 0x12==opcode
+			|| 0x13==opcode
+			|| 0x92==opcode
+			|| 0x93==opcode
+			|| 0x74==opcode
+			|| 0x75==opcode
+			|| 0x76==opcode
+			|| 0x77==opcode
+			|| 0xB4==opcode
+			|| 0xB5==opcode;
+	}
+	
+	public static boolean isOpcodeNonUnique(short opcode) {
+		return !CPU.isOpcodeUnique(opcode);
+	}
+	
+	public static void process(short opcode) throws CpuOpcodeInvalidException, CpuInvalidLengthException {
+		// check if opcode is valid
+		boolean op_valid = isOpcodeValid(opcode);
+		if(true==op_valid) {
+			// determine length of opcode
+			int length = CPU.getByteLengthForOpcode(opcode);
+			
+			switch(length) {
+				case 1:
+					CPU.process1(opcode);
+					break;
+				case 2:
+					CPU.process2(opcode, GPU.getByte(CPU.getPC()+1));
+					break;
+				case 3:
+					CPU.process3(opcode, GPU.getByte(CPU.getPC()+1), GPU.getByte(CPU.getPC()+2));
+					break;
+			    default:
+			    	throw new CpuInvalidLengthException();
+			}
+		}
+		else {
+			throw new CpuOpcodeInvalidException();
+		}
+	}
+	
+	// process 1 byte opcode
+	public static void process1(short opcode) {
+		try {
+			// analyze opcode
+			boolean op_unique = CPU.isOpcodeUnique(opcode);
+			
+			String methodName = "";
+			if(op_unique) {
+				methodName = "process0x"+String.format("%02X", opcode);
+			} 
+			else {
+				Short opcode_base = (short) (opcode & 0xFC);
+				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
+			}
+			
+			Method method = CPU.class.getMethod(methodName, Short.class);
+			method.invoke(null, opcode);
+			
+			if(true//no jump
+					) {
+			CPU.pc = CPU.pc + 1;
+			}
+		}
+		catch(NoSuchMethodException ex) {
+			ex.printStackTrace();
+		}
+		catch(InvocationTargetException ex) {
+			ex.printStackTrace();
+		}
+		catch(IllegalAccessException ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	// process 2 byte opcode with 1 param byte
+	public static void process2(Short opcode, Short param1) {
+		try {
+			// analyze opcode
+			boolean op_unique = CPU.isOpcodeUnique(opcode);
+			
+			String methodName = "";
+			if(op_unique) {
+				methodName = "process0x"+String.format("%02X", opcode);
+			} 
+			else {
+				Short opcode_base = (short) (opcode & 0xFC);
+				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
+			}
+			
+			Method method = CPU.class.getMethod(methodName, Short.class, Short.class);
+			method.invoke(null, opcode, param1);
+			
+			if(true//no jump
+					) {
+			CPU.pc = CPU.pc + 2;
+			}
+		}
+		catch(NoSuchMethodException ex) {
+			//TODO
+		}
+		catch(InvocationTargetException ex) {
+			//TODO
+		}
+		catch(IllegalAccessException ex) {
+			//TODO
+		}
+	}
+	
+	// process 3 byte opcode with 2 param bytes
+	public static void process3(Short opcode, Short param1, Short param2) {
+		try {
+			// analyze opcode
+			boolean op_unique = CPU.isOpcodeUnique(opcode);
+			
+			String methodName = "";
+			if(op_unique) {
+				methodName = "process0x"+String.format("%02X", opcode);
+			} 
+			else {
+				Short opcode_base = (short) (opcode & 0xFC);
+				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
+			}
+			
+			Method method = CPU.class.getMethod(methodName, Short.class, Short.class, Short.class);
+			method.invoke(null, opcode, param1, param2);
+			
+			if(true//no jump
+					) {
+			CPU.pc = CPU.pc + 3;
+			}
+		}
+		catch(NoSuchMethodException ex) {
+			//TODO
+		}
+		catch(InvocationTargetException ex) {
+			//TODO
+		}
+		catch(IllegalAccessException ex) {
+			//TODO
+		}
+	}
+	
+	/*************************/
+	
+	// TODOs
+	
+	// LODR
+	public static void process0x08_0x0B(Short opcode, Short param1) {
+		
+	}
+	
+	// EORZ
+	public static void process0x20_0x23(Short opcode) {
+		
+	}
+	
+	// NOP
+	public static void process0xC0(Short opcode) {
+
+	}
+	
+	/************************/
+	
+	// reset the cpu
+	public static void reset() {
+		CPU.pc = 0;
+	}
+	
+	// get program counter
+	public static int getPC() {
+		return CPU.pc;
+	}
+	
+	// get register 0
+	public static int getR0() {
+		return CPU.r0;
+	}
+	
+	// get register 1
+	public static int getR1() {
+		return CPU.r1;
+	}
+	
+	// get register 2
+	public static int getR2() {
+		return CPU.r2;
+	}
+	
+	// get register 3
+	public static int getR3() {
+		return CPU.r3;
+	}
+	
+	// get register 4
+	public static int getR4() {
+		return CPU.r4;
+	}
+	
+	// get register 5
+	public static int getR5() {
+		return CPU.r5;
+	}
+	
+	// get register 6
+	public static int getR6() {
+		return CPU.r6;
+	}
+	
+	// get psu
+	public static int getPSU() {
+		return CPU.psu;
+	}
+	
+	// get psl
+	public static int getPSL() {
+		return CPU.psl;
+	}
+	
+	// get stack pointer
+	public static int getSP() {
+		return CPU.sp;
+	}
+	
+	public static void step() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
+		short byt = GPU.getByte(CPU.getPC());
+		CPU.process(byt);
+	}
+	
+	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
+		while(true) {
+			CPU.dumpStatus();
+			Clock.waitForNextCycle();
+			CPU.step();
+		}
+	}
+	
+	public static void dumpStatus() {
+		System.out.println("==\nPC:"+CPU.getPC());
+	}
+	
+}
