@@ -27,8 +27,6 @@ public class GPU {
 	
 	// is addr video space?
 	public static boolean isAddrGpu(int addr) {
-		//TODO the GPU will tell the ROM that the Addr is meant for him
-		// so we need to add a logic here
 		return false;
 	}
 	
@@ -59,7 +57,6 @@ public class GPU {
 		}
 		else {
 			// should not happen
-			// TODO error
 		}
 	}
 	
@@ -76,17 +73,13 @@ public class GPU {
 				return ROM.getByte(addr);
 			}
 			else {
-				// should not happen
-				// TODO error
 				return 0x00;
 			}
 		}
 		catch(RomAddrNotValidException ex) {
-			// TODO error
 			return 0x00;
 		}
 		catch(RomNotInitializedException ex) {
-			// TODO error
 			return 0x00;
 		}
 	}

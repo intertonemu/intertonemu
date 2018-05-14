@@ -193,19 +193,16 @@ public class CPU {
 			Method method = CPU.class.getMethod(methodName, short.class, short.class);
 			method.invoke(null, opcode, param1);
 			
-			if(true//no jump
+			if(true
 					) {
 			CPU.pc = CPU.pc + 2;
 			}
 		}
 		catch(NoSuchMethodException ex) {
-			//TODO
 		}
 		catch(InvocationTargetException ex) {
-			//TODO
 		}
 		catch(IllegalAccessException ex) {
-			//TODO
 		}
 	}
 	
@@ -233,13 +230,9 @@ public class CPU {
 			}
 		}
 		catch(NoSuchMethodException ex) {
-			//TODO
 		}
-		catch(InvocationTargetException ex) {
-			//TODO
-		}
+		catch(InvocationTargetException ex) {}
 		catch(IllegalAccessException ex) {
-			//TODO
 		}
 	}
 	
@@ -415,7 +408,6 @@ public class CPU {
 				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			default:
-				// TODO error
 		}
 	}
 	
