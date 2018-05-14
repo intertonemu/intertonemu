@@ -47,6 +47,22 @@ public class GPU {
 		return GPU.mem[addr];
 	}
 	
+	// set byte
+	public static void setByte(int addr, Short val) {
+		// video chip checks if byte is from GPU or ROM
+		if(GPU.isAddrGpu(addr)) {
+			// set byte from GPU memory
+			GPU.setMem(addr, val);
+		}
+		else if(GPU.isAddrRom(addr)) {
+			// error on most ROMs cannot set anything
+		}
+		else {
+			// should not happen
+			// TODO error
+		}
+	}
+	
 	// get byte
 	public static short getByte(int addr) {
 		// video chip checks if byte is from GPU or ROM

@@ -263,6 +263,38 @@ public class CPU {
 		}
 	}
 	
+	// return the r/x value of the opcode
+	public static Short getRX(Short opcode) {
+		return (short) (opcode & 0x3);
+	}
+	
+	public static Short getI(Short param1) {
+		return (short) ((param1 >> 7) & 0x1);
+	}
+	
+	public static Short getIST(Short param1) {
+		return (short) ((param1 >> 5) & 0x3);
+	}
+	
+	public static Short getAddrUpper(Short param1) {
+		return (short) (param1 & 0x1F);
+	}
+	
+	public static Short getAddrLower(Short param2) {
+		return (short) param2;
+	}
+	
+	// convert two byte addr to integer
+	public static Integer getAddr(Short addr_u, Short addr_l) {
+		String s_addr_u = String.format("%02X", addr_u);
+		String s_addr_l = String.format("%02X", addr_l);
+		
+		String s_addr = s_addr_u + s_addr_l;
+		int addr = Integer.parseInt(s_addr, 16);
+		
+		return addr;
+	}
+	
 	/*************************/
 	
 	// TODOs
@@ -282,6 +314,48 @@ public class CPU {
 
 	}
 	
+	// STRA
+	public static void process0xCC_0xCF(Short opcode, Short param1, Short param2) {
+		// see page 23 in Bernstein et al
+		Short rx = CPU.getRX(opcode);
+		Short i = CPU.getI(param1);
+		Short ist = CPU.getIST(param1);
+		Short addr_u = CPU.getAddrUpper(param1);
+		Short addr_l = CPU.getAddrLower(param2);
+		
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if(i==0x1) {
+			//indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr+1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		
+		switch(ist) {
+			case 0:
+				// non-indexed
+				GPU.setByte(addr, CPU.r1);
+				break;
+			case 1:
+				// indexed increment
+				CPU.r1++;
+				GPU.setByte(addr+CPU.r1, CPU.r0);
+				break;
+			case 2:
+				// indexed decrement
+				CPU.r1--;
+				GPU.setByte(addr+CPU.r1, CPU.r0);
+				break;
+			case 3:
+				// just indexed
+				GPU.setByte(addr+CPU.r1, CPU.r0);
+				break;
+			default:
+				// TODO error
+		}
+	}
+	
 	/************************/
 	
 	// reset the cpu
@@ -295,47 +369,47 @@ public class CPU {
 	}
 	
 	// get register 0
-	public static int getR0() {
+	public static Short getR0() {
 		return CPU.r0;
 	}
 	
 	// get register 1
-	public static int getR1() {
+	public static Short getR1() {
 		return CPU.r1;
 	}
 	
 	// get register 2
-	public static int getR2() {
+	public static Short getR2() {
 		return CPU.r2;
 	}
 	
 	// get register 3
-	public static int getR3() {
+	public static Short getR3() {
 		return CPU.r3;
 	}
 	
 	// get register 4
-	public static int getR4() {
+	public static Short getR4() {
 		return CPU.r4;
 	}
 	
 	// get register 5
-	public static int getR5() {
+	public static Short getR5() {
 		return CPU.r5;
 	}
 	
 	// get register 6
-	public static int getR6() {
+	public static Short getR6() {
 		return CPU.r6;
 	}
 	
 	// get psu
-	public static int getPSU() {
+	public static Short getPSU() {
 		return CPU.psu;
 	}
 	
 	// get psl
-	public static int getPSL() {
+	public static Short getPSL() {
 		return CPU.psl;
 	}
 	
