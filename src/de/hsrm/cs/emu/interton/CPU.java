@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import de.hsrm.cs.emu.interton.exception.CpuInvalidLengthException;
+import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
 
 public class CPU {
@@ -176,7 +177,7 @@ public class CPU {
 				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
 			}
 			
-			Method method = CPU.class.getMethod(methodName, Short.class);
+			Method method = CPU.class.getMethod(methodName, short.class);
 			method.invoke(null, opcode);
 			
 			if(true//no jump
@@ -196,7 +197,7 @@ public class CPU {
 	}
 	
 	// process 2 byte opcode with 1 param byte
-	public static void process2(Short opcode, Short param1) {
+	public static void process2(short opcode, short param1) {
 		try {
 			// analyze opcode
 			boolean op_unique = CPU.isOpcodeUnique(opcode);
@@ -295,27 +296,85 @@ public class CPU {
 		return addr;
 	}
 	
+	// set register determined by i to val
+	private static void setRegister(int i, short val) throws CpuInvalidRegisterException {
+		switch(i) {
+		case 0:
+			CPU.setR0(val);
+			break;
+		case 1:
+			CPU.setR1(val);
+			break;
+		case 2:
+			CPU.setR2(val);
+			break;
+		case 3:
+			CPU.setR3(val);
+			break;
+		case 4:
+			CPU.setR4(val);
+			break;
+		case 5:
+			CPU.setR5(val);
+			break;
+		case 6:
+			CPU.setR6(val);
+			break;
+			default:
+				throw new CpuInvalidRegisterException();
+		}
+	}
+	
+	// get register by index i
+	public static short getRegister(int i) throws CpuInvalidRegisterException {
+		switch(i) {
+		case 0:
+			return CPU.getR0();
+		case 1:
+			return CPU.getR1();
+		case 2:
+			return CPU.getR2();
+		case 3:
+			return CPU.getR3();
+		case 4:
+			return CPU.getR4();
+		case 5:
+			return CPU.getR5();
+		case 6:
+			return CPU.getR6();
+			default:
+				throw new CpuInvalidRegisterException();
+		}
+	}
+	
 	/*************************/
 	
 	// TODOs
 	
 	// LODR
-	public static void process0x08_0x0B(Short opcode, Short param1) {
+	public static void process0x08_0x0B(short opcode, short param1) {
 		
 	}
 	
 	// EORZ
-	public static void process0x20_0x23(Short opcode) {
+	public static void process0x20_0x23(short opcode) {
 		
 	}
 	
+	// STRZ
+	public static void process0xC0_0xC3(short opcode) throws CpuOpcodeInvalidException, CpuInvalidRegisterException {
+		short r = (short) (opcode & 0x3);
+		
+		CPU.setRegister(r, CPU.getRegister(0));
+	}
+	
 	// NOP
-	public static void process0xC0(Short opcode) {
-
+	public static void process0xC0(short opcode) {
+		// done
 	}
 	
 	// STRA
-	public static void process0xCC_0xCF(Short opcode, Short param1, Short param2) {
+	public static void process0xCC_0xCF(short opcode, short param1, short param2) {
 		// see page 23 in Bernstein et al
 		Short rx = CPU.getRX(opcode);
 		Short i = CPU.getI(param1);
@@ -366,6 +425,41 @@ public class CPU {
 	// get program counter
 	public static int getPC() {
 		return CPU.pc;
+	}
+	
+	// set register 0
+	private static void setR0(short val) {
+		CPU.r0 = val;
+	}
+	
+	// set register 1
+	private static void setR1(short val) {
+		CPU.r1 = val;
+	}
+	
+	// set register 2
+	private static void setR2(short val) {
+		CPU.r2 = val;
+	}
+	
+	// set register 3
+	private static void setR3(short val) {
+		CPU.r3 = val;
+	}
+	
+	// set register 4
+	private static void setR4(short val) {
+		CPU.r4 = val;
+	}
+	
+	// set register 5
+	private static void setR5(short val) {
+		CPU.r5 = val;
+	}
+	
+	// set register 6
+	private static void setR6(short val) {
+		CPU.r6 = val;
 	}
 	
 	// get register 0
