@@ -244,9 +244,15 @@ public class CPU {
 		}
 	}
 	
+	// check if the Register-Select-Bit in PSL is set
+	public static boolean isRsSet() {
+		return 0x1 == ((CPU.getPSL() >> 4) & 0x1);
+	}
+	
 	// return the r/x value of the opcode
 	public static short getRX(short opcode) {
-		return (short) (opcode & 0x3);
+		short rx = (short) (opcode & 0x3);
+		return (short) (rx + ((isRsSet() && rx!=0) ? 3 : 0));
 	}
 	
 	public static short getI(short param1) {
@@ -345,7 +351,7 @@ public class CPU {
 	
 	// STRZ
 	public static void process0xC0_0xC3(short opcode) throws CpuOpcodeInvalidException, CpuInvalidRegisterException {
-		short r = (short) (opcode & 0x3);
+		short r = CPU.getRX(opcode);
 		
 		CPU.setRegister(r, CPU.getRegister(0));
 	}
