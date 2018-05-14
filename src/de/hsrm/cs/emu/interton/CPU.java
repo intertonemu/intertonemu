@@ -330,6 +330,10 @@ public class CPU {
 	/*************************/
 	
 	// TODOs
+	public static void process0x00_0x03(short opcode) {
+		
+	}
+	
 	
 	// LODR
 	public static void process0x08_0x0B(short opcode, short param1) {
