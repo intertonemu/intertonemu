@@ -153,7 +153,7 @@ public class CPU {
 				methodName = "process0x"+String.format("%02X", opcode);
 			} 
 			else {
-				Short opcode_base = (short) (opcode & 0xFC);
+				short opcode_base = (short) (opcode & 0xFC);
 				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
 			}
 			
@@ -187,11 +187,11 @@ public class CPU {
 				methodName = "process0x"+String.format("%02X", opcode);
 			} 
 			else {
-				Short opcode_base = (short) (opcode & 0xFC);
+				short opcode_base = (short) (opcode & 0xFC);
 				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
 			}
 			
-			Method method = CPU.class.getMethod(methodName, Short.class, Short.class);
+			Method method = CPU.class.getMethod(methodName, short.class, short.class);
 			method.invoke(null, opcode, param1);
 			
 			if(true//no jump
@@ -211,7 +211,7 @@ public class CPU {
 	}
 	
 	// process 3 byte opcode with 2 param bytes
-	public static void process3(Short opcode, Short param1, Short param2) {
+	public static void process3(short opcode, short param1, short param2) {
 		try {
 			// analyze opcode
 			boolean op_unique = CPU.isOpcodeUnique(opcode);
@@ -221,11 +221,11 @@ public class CPU {
 				methodName = "process0x"+String.format("%02X", opcode);
 			} 
 			else {
-				Short opcode_base = (short) (opcode & 0xFC);
+				short opcode_base = (short) (opcode & 0xFC);
 				methodName = "process0x"+String.format("%02X", opcode_base)+"_0x"+String.format("%02X", opcode_base+3);
 			}
 			
-			Method method = CPU.class.getMethod(methodName, Short.class, Short.class, Short.class);
+			Method method = CPU.class.getMethod(methodName, short.class, short.class, short.class);
 			method.invoke(null, opcode, param1, param2);
 			
 			if(true//no jump
@@ -245,28 +245,28 @@ public class CPU {
 	}
 	
 	// return the r/x value of the opcode
-	public static Short getRX(Short opcode) {
+	public static short getRX(short opcode) {
 		return (short) (opcode & 0x3);
 	}
 	
-	public static Short getI(Short param1) {
+	public static short getI(short param1) {
 		return (short) ((param1 >> 7) & 0x1);
 	}
 	
-	public static Short getIST(Short param1) {
+	public static short getIST(short param1) {
 		return (short) ((param1 >> 5) & 0x3);
 	}
 	
-	public static Short getAddrUpper(Short param1) {
+	public static short getAddrUpper(short param1) {
 		return (short) (param1 & 0x1F);
 	}
 	
-	public static Short getAddrLower(Short param2) {
+	public static short getAddrLower(short param2) {
 		return (short) param2;
 	}
 	
 	// convert two byte addr to integer
-	public static Integer getAddr(Short addr_u, Short addr_l) {
+	public static Integer getAddr(short addr_u, short addr_l) {
 		String s_addr_u = String.format("%02X", addr_u);
 		String s_addr_l = String.format("%02X", addr_l);
 		
@@ -356,13 +356,13 @@ public class CPU {
 	}
 	
 	// STRA
-	public static void process0xCC_0xCF(short opcode, short param1, short param2) {
+	public static void process0xCC_0xCF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		// see page 23 in Bernstein et al
-		Short rx = CPU.getRX(opcode);
-		Short i = CPU.getI(param1);
-		Short ist = CPU.getIST(param1);
-		Short addr_u = CPU.getAddrUpper(param1);
-		Short addr_l = CPU.getAddrLower(param2);
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short ist = CPU.getIST(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
 		
 		int addr = CPU.getAddr(addr_u, addr_l);
 		if(i==0x1) {
@@ -376,21 +376,21 @@ public class CPU {
 		switch(ist) {
 			case 0:
 				// non-indexed
-				GPU.setByte(addr, CPU.r1);
+				GPU.setByte(addr, CPU.getRegister(rx));
 				break;
 			case 1:
 				// indexed increment
 				CPU.r1++;
-				GPU.setByte(addr+CPU.r1, CPU.r0);
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			case 2:
 				// indexed decrement
 				CPU.r1--;
-				GPU.setByte(addr+CPU.r1, CPU.r0);
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			case 3:
 				// just indexed
-				GPU.setByte(addr+CPU.r1, CPU.r0);
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			default:
 				// TODO error
@@ -445,47 +445,47 @@ public class CPU {
 	}
 	
 	// get register 0
-	public static Short getR0() {
+	public static short getR0() {
 		return CPU.r0;
 	}
 	
 	// get register 1
-	public static Short getR1() {
+	public static short getR1() {
 		return CPU.r1;
 	}
 	
 	// get register 2
-	public static Short getR2() {
+	public static short getR2() {
 		return CPU.r2;
 	}
 	
 	// get register 3
-	public static Short getR3() {
+	public static short getR3() {
 		return CPU.r3;
 	}
 	
 	// get register 4
-	public static Short getR4() {
+	public static short getR4() {
 		return CPU.r4;
 	}
 	
 	// get register 5
-	public static Short getR5() {
+	public static short getR5() {
 		return CPU.r5;
 	}
 	
 	// get register 6
-	public static Short getR6() {
+	public static short getR6() {
 		return CPU.r6;
 	}
 	
 	// get psu
-	public static Short getPSU() {
+	public static short getPSU() {
 		return CPU.psu;
 	}
 	
 	// get psl
-	public static Short getPSL() {
+	public static short getPSL() {
 		return CPU.psl;
 	}
 	
