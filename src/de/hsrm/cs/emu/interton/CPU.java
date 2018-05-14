@@ -386,12 +386,12 @@ public class CPU {
 				break;
 			case 1:
 				// indexed increment
-				CPU.r1++;
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx)+1));
 				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			case 2:
 				// indexed decrement
-				CPU.r1--;
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx)-1));
 				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
 				break;
 			case 3:
