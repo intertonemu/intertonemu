@@ -49,7 +49,6 @@ public class CPU {
 	
 	// is opcode invalid?
 	public static boolean isOpcodeInvalid(short opcode) {
-		//TODO probably easier to find a similarity on bit level
 		return 0x00==opcode
 			|| 0x10==opcode
 			|| 0x11==opcode
@@ -341,14 +340,31 @@ public class CPU {
 	
 	// LODR
 	public static void process0x08_0x0B(short opcode, short param1) {
-		
+
 	}
 	
 	// EORZ
 	public static void process0x20_0x23(short opcode) {
-		
+		short rx = CPU.getRX(opcode);
+		short r0 = CPU.getR0();
+		CPU.setR0((short)(r0 ^ rx));
 	}
 	
+	// EORI
+	public static void process0x24_0x27(short opcode, short param1) {
+			
+	}
+
+	// EORR
+	public static void process0x28_0x2B(short opcode, short param1) {
+		
+	}
+
+	// EORA
+	public static void process0x2C_0x2F(short opcode, short param1, short param2) {
+		
+	}
+
 	// STRZ
 	public static void process0xC0_0xC3(short opcode) throws CpuOpcodeInvalidException, CpuInvalidRegisterException {
 		short r = CPU.getRX(opcode);
