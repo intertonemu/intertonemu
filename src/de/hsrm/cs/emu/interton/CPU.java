@@ -337,10 +337,25 @@ public class CPU {
 		setRegister(0, r);
 	}
 	
-	
-	// LODR
-	public static void process0x08_0x0B(short opcode, short param1) {
+	//LODI
+	public static void process0x40_0x07(short opcode) throws CpuInvalidRegisterException {
+		short r = (short)(opcode & 0x3);
 		
+		setRegister(0, r);
+	}
+		
+	//LODR
+	public static void process0x08_0x0B(short opcode) throws CpuInvalidRegisterException {
+		short r = (short)(opcode & 0x3);
+		
+		setRegister(0, r);
+	}
+	
+	//LODA
+	public static void process0x0C_0x0F(short opcode) throws CpuInvalidRegisterException {
+		short r = (short)(opcode & 0x3);
+		
+		setRegister(0, r);
 	}
 	
 	// EORZ
