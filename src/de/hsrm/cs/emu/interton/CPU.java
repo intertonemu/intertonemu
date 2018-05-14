@@ -330,6 +330,7 @@ public class CPU {
 	/**********************/
 	
 	// TODOs
+	//LODZ
 	public static void process0x00_0x03(short opcode) throws CpuInvalidRegisterException {
 		short r = (short)(opcode & 0x3);
 		
