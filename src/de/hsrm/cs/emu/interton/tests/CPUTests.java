@@ -14,4 +14,10 @@ public class CPUTests {
 		CPU.reset();
 		assertEquals(0, CPU.getPC());
 	}
+	
+	//TODOs
+	
+	/*************************/
+	
+	/*************************/
 }
