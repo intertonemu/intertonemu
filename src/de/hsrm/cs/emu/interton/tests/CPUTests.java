@@ -32,6 +32,7 @@ public class CPUTests {
 	}
 	
 	@Test
+	// STRA,r1
 	// I=0 => direct
 	// IST=1 => indexed increment
 	public void testOpcode0xCDI0IST1() {

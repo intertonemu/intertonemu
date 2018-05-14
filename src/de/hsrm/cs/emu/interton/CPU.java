@@ -38,7 +38,7 @@ public class CPU {
 	// Lower Program Status Register
 	private static short psl=0;
 	
-	// Stack pointer
+	// Stack pointer (maybe not needed, should be in PSU(0..2))
 	private static short sp=0;
 	
 	// hide constructor
