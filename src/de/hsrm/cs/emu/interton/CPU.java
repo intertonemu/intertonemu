@@ -330,33 +330,64 @@ public class CPU {
 	/**********************/
 	
 	// TODOs
-	//LODZ
+	//LODZ (load content of r into r0)
 	public static void process0x00_0x03(short opcode) throws CpuInvalidRegisterException {
-		short r = (short)(opcode & 0x3);
+		short r = getRX(opcode);
 		
 		setRegister(0, r);
 	}
 	
-	//LODI
-	public static void process0x40_0x07(short opcode) throws CpuInvalidRegisterException {
-		short r = (short)(opcode & 0x3);
+	//LODI (load value param1 into defined r)
+	public static void process0x04_0x07(short opcode, short param1) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
 		
-		setRegister(0, r);
+		setRegister(r, param1);
 	}
 		
-	//LODR
-	public static void process0x08_0x0B(short opcode) throws CpuInvalidRegisterException {
-		short r = (short)(opcode & 0x3);
+	//LODR (load value of calculated register (bit 0..6) into defined r(7..8))
+	public static void process0x08_0x0B(short opcode, short param1) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
 		
-		setRegister(0, r);
+		setRegister(r, (short) (param1 & 0xFFFF00));
 	}
 	
 	//LODA
-	public static void process0x0C_0x0F(short opcode) throws CpuInvalidRegisterException {
-		short r = (short)(opcode & 0x3);
+	public static void process0x0C_0x0F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
 		
-		setRegister(0, r);
+		setRegister(r, (short) (getAddrUpper(param1) & getAddrLower(param2)));
 	}
+	
+	
+	//IORZ (load logic OR of r and r0 into r0)
+	public static void process0x60_0x63(short opcode) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
+		
+		setRegister(0, (short) (r & CPU.getR0()));
+	}
+	
+	//IORI (load logic OR of r and value param1 into defined r)
+	public static void process0x60_0x67(short opcode, short param1) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
+		
+		setRegister(r, (short) (r & param1));
+	}
+		
+	//IORR (load logic OR of r and value of calculated register (bit 0..6) into defined r)
+	public static void process0x68_0x6B(short opcode, short param1) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
+		
+		setRegister(r, (short) (r & ((param1 & 0xFFFF00))));
+	}
+	
+	//IORA
+	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+		short r = getRX(opcode);
+		
+		setRegister(r, (short) (r & ((getAddrUpper(param1) & getAddrLower(param2)))));
+	}
+	
+	
 	
 	// EORZ
 	public static void process0x20_0x23(short opcode) {
