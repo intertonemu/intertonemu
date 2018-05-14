@@ -68,36 +68,16 @@ public class CPU {
 	}
 	
 	public static short getByteLengthForOpcode(short opcode) {
-		if(0x00<=opcode && opcode<0x04
-				|| 0xC0<=opcode && opcode<0xC4
-				|| 0x80<=opcode && opcode<0x84
-				|| 0xA0<=opcode && opcode<0xA4
-				|| 0x94<=opcode && opcode<0x98
-				|| 0x40<=opcode && opcode<0x44
-				|| 0x60<=opcode && opcode<0x64
-				|| 0x20<=opcode && opcode<0x24
-				|| 0xE0<=opcode && opcode<0xE4
-				|| 0x50<=opcode && opcode<0x54
-				|| 0xD0<=opcode && opcode<0xD4
-				|| 0x14<=opcode && opcode<0x18
-				|| 0x34<=opcode && opcode<0x38
-				|| 0xF0<=opcode && opcode<0xF4
-				|| 0x70<=opcode && opcode<0x74
-				|| 0xB0<=opcode && opcode<0xB4
-				|| 0x30<=opcode && opcode<0x34
-				|| 0xD4<=opcode && opcode<0xD8
-				|| 0x54<=opcode && opcode<0x58
-				|| 0xC0==opcode
-				|| 0x92<=opcode && opcode<0x94
-				|| 0x12<=opcode && opcode<0x14) {
+		if((opcode & 0xF) <=0x3
+				|| (opcode & 0xF0) == 1
+				|| (opcode & 0xF0) == 3
+				|| (opcode & 0xF0) == 9) {
 			return 1;
 		}
-		else if(false//TODO
-				) {
+		else if((opcode & 0xF) >= 0x4 && (opcode & 0xF) <= 0xB) {
 			return 2;
 		}
-		else if(false//TODO
-				) {
+		else if((opcode & 0xF) >= 0xC) {
 			return 3;
 		}
 		else {
