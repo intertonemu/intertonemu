@@ -337,20 +337,29 @@ public class CPU {
 	}
 	
 	// EORZ
-	public static void process0x20_0x23(short opcode) {
+	public static void process0x20_0x23(short opcode) throws CpuInvalidRegisterException {
 		short rx = CPU.getRX(opcode);
-		short r0 = CPU.getR0();
-		CPU.setR0((short)(r0 ^ rx));
+		CPU.setRegister(0,(short)(CPU.getRegister(0) ^ getRegister(rx)));
 	}
 	
 	// EORI
-	public static void process0x24_0x27(short opcode, short param1) {
-			
+	public static void process0x24_0x27(short opcode, short param1) throws CpuInvalidRegisterException {
+			short rx = CPU.getRX(opcode);
+			CPU.setRegister(rx,(short)(getRegister(rx) ^ param1));
 	}
 
 	// EORR
-	public static void process0x28_0x2B(short opcode, short param1) {
-		
+	public static void process0x28_0x2B(short opcode, short param1) throws CpuInvalidRegisterException {
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short a = (short)(param1 & 0x7F);
+		int addr;
+
+		if(i==0x0){
+			
+		}
+		else if(i==0x1){
+		}
 	}
 
 	// EORA
