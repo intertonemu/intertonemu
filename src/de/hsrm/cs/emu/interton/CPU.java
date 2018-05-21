@@ -363,8 +363,39 @@ public class CPU {
 	}
 
 	// EORA
-	public static void process0x2C_0x2F(short opcode, short param1, short param2) {
+	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short ist = CPU.getIST(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
 		
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if(i==0x1) {
+			//indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr+1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		switch(ist) {
+			case 0:
+				// non-indexed
+				CPU.setRegister(rx,(short)(CPU.getRegister(rx)^GPU.getByte(addr)));
+				break;
+			case 1:
+				// indexed increment
+				CPU.r1++;
+				break;
+			case 2:
+				// indexed decrement
+				CPU.r1--;
+				break;
+			case 3:
+				// just indexed
+				break;
+			default:
+		}
 	}
 
 	// STRZ
