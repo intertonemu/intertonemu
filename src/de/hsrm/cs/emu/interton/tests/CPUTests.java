@@ -110,6 +110,51 @@ public class CPUTests {
 	public void testOpcode0xCF() {
 		
 	}
+	/************************************/
+	
+	//SPSU
+	@Test
+	public void testOpcode1x02() {
+		short r0_old = CPU.getR0();
+		CPU.process1x02();
+		short r0_new = CPU.getR0();
+		
+		assertEquals(r0_new, r0_old);
+	}
+	
+	//SPSL
+	@Test
+	public void testOpcode1x03() {
+		short r0_old = CPU.getR0();
+		CPU.process1x03();
+		short r0_new = CPU.getR0();
+		
+		assertEquals(r0_new, r0_old);
+	}
+	
+	//RETC, eq
+	@Test
+	public void testOpcode1x04() {
+		
+	}
+	
+	//RETC, gt
+	@Test
+	public void testOpcode1x05() {
+		
+	}
+	
+	//RETC, lt
+	@Test
+	public void testOpcode1x06() {
+		
+	}
+	
+	//RETC, un
+	@Test
+	public void testOpcode1x07() {
+		
+	}
 	
 	/*************************/
 }
