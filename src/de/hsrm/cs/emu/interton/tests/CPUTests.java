@@ -1,6 +1,7 @@
 package de.hsrm.cs.emu.interton.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
@@ -107,29 +108,30 @@ public class CPUTests {
 	}
 	
 	@Test
-	public void testOpcode0xCF() {
+	public void testOpcode0xCF() {		CPU.process2((short) 0x78, CPU.getR0());
+
 		
 	}
 	/************************************/
 	
 	//SPSU
 	@Test
-	public void testOpcode1x02() {
+	public void testOpcode0x12() {
 		short r0_old = CPU.getR0();
-		CPU.process1x02();
+		CPU.process1x02(CPU.getPSU());
 		short r0_new = CPU.getR0();
 		
-		assertEquals(r0_new, r0_old);
+		assertEquals(CPU.getPSU(), r0_new);
 	}
 	
 	//SPSL
 	@Test
-	public void testOpcode1x03() {
+	public void testOpcode0x13() {
 		short r0_old = CPU.getR0();
-		CPU.process1x03();
+		CPU.process1((short) 0x13);
 		short r0_new = CPU.getR0();
 		
-		assertEquals(r0_new, r0_old);
+		assertEquals(CPU.getPSL(), r0_new);
 	}
 	
 	//RETC, eq
@@ -140,21 +142,218 @@ public class CPUTests {
 	
 	//RETC, gt
 	@Test
-	public void testOpcode1x05() {
+	public void testOpcode0x15() {
 		
 	}
 	
 	//RETC, lt
 	@Test
-	public void testOpcode1x06() {
+	public void testOpcode0x16() {
 		
 	}
 	
 	//RETC, un
 	@Test
-	public void testOpcode1x07() {
+	public void testOpcode0x17() {
 		
 	}
 	
-	/*************************/
+	//BCTR, eq
+	@Test
+	public void testOpcode0x18() {
+		
+	}
+	
+	//BCTR, gt
+	@Test
+	public void testOpcode0x19() {
+		
+	}
+	
+	//BCTR, lt
+	@Test
+	public void testOpcode0x1A() {
+		
+	}
+	
+	//BCTR, un
+	@Test
+	public void testOpcode0x1B() {
+		
+	}
+	
+	//BCTA, eq
+	@Test
+	public void testOpcode0x1C() {
+		
+	}
+	
+	//BCTA, gt
+	@Test
+	public void testOpcode0x1D() {
+		
+	}
+	
+	//BCTA, lt
+	@Test
+	public void testOpcode0x1E() {
+		
+	}
+	
+	//BCTA, un
+	@Test
+	public void testOpcode0x1F() {
+		
+	}
+	
+	/************************************/
+	
+	//REDD, r0
+	@Test
+	public void testOpcode0x70() {
+		short r0_old = CPU.getR0();
+		CPU.process1((short) 0x70);
+		short r0_new = CPU.getR0();
+		
+		assertEquals(/*D-Port*/, r0_new);
+	}
+	
+	//REDD, r1
+	@Test
+	public void testOpcode0x71() {
+		short r1_old = CPU.getR1();
+		CPU.process1((short) 0x71);
+		short r1_new = CPU.getR1();
+		
+		assertEquals(/*D-Port*/, r1_new);
+	}
+	
+	//REDD, r2
+	@Test
+	public void testOpcode0x72() {
+		short r2_old = CPU.getR2();
+		CPU.process1((short) 0x72);
+		short r2_new = CPU.getR2();
+		
+		assertEquals(/*D-Port*/, r2_new);
+	}
+	
+	//REDD, r3
+	@Test
+	public void testOpcode0x73() {
+		short r3_old = CPU.getR3();
+		CPU.process1((short) 0x73);
+		short r3_new = CPU.getR3();
+		
+		assertEquals(/*D-Port*/, r3_new);
+	}
+	
+	//CPSU
+	@Test
+	public void testOpcode0x74() {
+		short psu_old = CPU.getPSU();
+		CPU.process2((short) 0x74, NULL);
+		short psu_new = CPU.getPSU();
+
+		
+		assertEquals(0, psu_new);
+	}
+	
+	//CPSL
+	@Test
+	public void testOpcode0x75() {
+		short psl_old = CPU.getPSL();
+		CPU.process2((short) 0x75, NULL);
+		short psl_new = CPU.getPSL();
+
+		
+		assertEquals(0, psl_new);
+	}
+	
+	//PPSU
+	@Test
+	public void testOpcode0x76() {
+		short psu_old = CPU.getPSU();
+		CPU.process2((short) 0x76, NULL);
+		short psu_new = CPU.getPSU();
+
+		
+		assertEquals(psu_new, psu_old);
+	}
+	
+	//PPSL
+	@Test
+	public void testOpcode0x77() {
+		short psl_old = CPU.getPSL();
+		CPU.process2((short) 0x77, NULL);
+		short psl_new = CPU.getPSL();
+
+		
+		assertEquals(1, psl_new);
+	}
+	
+	//BSNR, r0
+	@Test
+	public void testOpcode0x78() {
+		CPU.process2((short) 0x78, CPU.getR0());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNR, r1
+	@Test
+	public void testOpcode0x79() {
+		CPU.process2((short) 0x79, CPU.getR1());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNR, r2
+	@Test
+	public void testOpcode0x7A() {
+		CPU.process2((short) 0x7A, CPU.getR2());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNR, r3
+	@Test
+	public void testOpcode0x7B() {
+		CPU.process2((short) 0x7B, CPU.getR3());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNA, r0
+	@Test
+	public void testOpcode0x7C() {
+		CPU.process2((short) 0x7C, CPU.getR0());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNA, r1
+	@Test
+	public void testOpcode0x7D() {
+		CPU.process2((short) 0x7D, CPU.getR1());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNA, r2
+	@Test
+	public void testOpcode0x7E() {
+		CPU.process2((short) 0x7E, CPU.getR2());
+		//stackpointer == adresse
+
+	}
+	
+	//BSNA, r3
+	@Test
+	public void testOpcode0x7F() {
+		CPU.process2((short) 0x7F, CPU.getR3());
+		//stackpointer == adresse
+	}
+	
+	/************************/
 }

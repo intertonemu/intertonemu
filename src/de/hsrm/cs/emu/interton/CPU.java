@@ -246,7 +246,8 @@ public class CPU {
 	
 	// return the r/x value of the opcode
 	public static Short getRX(Short opcode) {
-		return (short) (opcode & 0x3);
+		return (short) (opcode & 0x3);		
+
 	}
 	
 	public static Short getI(Short param1) {
