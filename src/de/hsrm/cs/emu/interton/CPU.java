@@ -387,7 +387,7 @@ public class CPU {
 		setRegister(r, (short) (r & ((getAddrUpper(param1) & getAddrLower(param2)))));
 	}
 	
-	
+	/********************************/
 	
 	// EORZ
 	public static void process0x20_0x23(short opcode) {
