@@ -56,7 +56,7 @@ public class CPU {
 
 	private static boolean jumped = false;
 
-	private static int instruction;
+	private static int instruction = 1;
 
 	// is opcode invalid?
 	public static boolean isOpcodeInvalid(short opcode) {
@@ -1205,14 +1205,19 @@ public class CPU {
 			CPU.step();
 		}
 	}
-
+	
 	public static void dumpStatus() {
-		System.out.printf("==\nPC: %04X ", CPU.getPC());
-		System.out.printf("# R0: %02X ", CPU.getR0() & 0xFF);
-		System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
-		System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
-		System.out.printf("# INS: %04d\n", CPU.instruction);
-
+		System.out.printf("%d ", CPU.instruction);
+		System.out.printf("%04X\n", CPU.pc);
 	}
+
+//	public static void dumpStatus() {
+//		System.out.printf("==\nPC: %04X ", CPU.getPC());
+//		System.out.printf("# R0: %02X ", CPU.getR0() & 0xFF);
+//		System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
+//		System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
+//		System.out.printf("# INS: %04d\n", CPU.instruction);
+//
+//	}
 
 }
