@@ -87,7 +87,7 @@ public class CPU {
 	/**
 	 * Upper 8 Bit of the PSW, also called PSU.
 	 */
-	private static short psu = 0;
+	private static short psu = 0x80; // Sense Bit is always set
 
 	/**
 	 * Lower 8 Bit of the PSW, also called PSL.
@@ -500,6 +500,10 @@ public class CPU {
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
+		if(CPU.pc==0x545) {
+			System.out.println("");
+		}
+		
 		short opcodeConditionCode = (short) (opcode & 0x03);
 		short programmstatusConditionCode = (short) (CPU.getPSL() & 0xC0);
 		if (opcodeConditionCode == 3 || programmstatusConditionCode == opcodeConditionCode) {
@@ -1634,13 +1638,13 @@ public class CPU {
 	}
 
 	public static void dumpStatus() {
-		System.out.printf("%d ", CPU.instruction);
-		System.out.printf("%04X ", CPU.pc);
-		System.out.printf("R0: %02X ", CPU.getR0());
-		System.out.printf("R1: %02X ", CPU.getR1());
-		System.out.printf("R2: %02X ", CPU.getR2());
-		System.out.printf("R3: %02X ", CPU.getR3());
-		System.out.printf("PSL: %02X ", CPU.getPSL());
+		//System.out.printf("%d ", CPU.instruction);
+		System.out.printf("%04X", CPU.pc);
+//		System.out.printf("R0: %02X ", CPU.getR0());
+//		System.out.printf("R1: %02X ", CPU.getR1());
+//		System.out.printf("R2: %02X ", CPU.getR2());
+//		System.out.printf("R3: %02X ", CPU.getR3());
+//		System.out.printf("PSL: %02X ", CPU.getPSL());
 		System.out.print("\n");
 	}
 
