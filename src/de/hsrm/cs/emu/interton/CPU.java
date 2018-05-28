@@ -107,10 +107,174 @@ public class CPU {
 	// == END CONSTRUCTOR ==
 	
 	// == BEGIN GETTER ==
+
+	/**
+	 * return value of register given by i
+	 * 
+	 * @param i to specify the register (valid are values from 0 to 3)
+	 * @return the value of the register given by i
+	 * @throws CpuInvalidRegisterException if an invalid i is given
+	 */
+	public static short getRegister(int i) throws CpuInvalidRegisterException {
+		switch (i) {
+		case 0:
+			return CPU.getR0();
+		case 1:
+			return CPU.isRsSet() ? CPU.getR4() : CPU.getR1();
+		case 2:
+			return CPU.isRsSet() ? CPU.getR5() : CPU.getR2();
+		case 3:
+			return CPU.isRsSet() ? CPU.getR6() : CPU.getR3();
+		default:
+			throw new CpuInvalidRegisterException();
+		}
+	}
+
+	/**
+	 * if the Sense Bit is set in the PSU register
+	 * 
+	 * @return if the Sense Bit is set in the PSU register
+	 */
+	public static boolean isSSet() {
+		return 0x1 == ((CPU.psu >> 7) & 0x1);
+	}
+	
+	/**
+	 * if the Flag Bit is set in the PSU register
+	 * 
+	 * @return if the Flag Bit is set in the PSU register
+	 */
+	public static boolean isFSet() {
+		return 0x1 == ((CPU.psu >> 6) & 0x1);
+	}
+	
+	/**
+	 * if the Interrupt Inhibit Bit is set in the PSU register
+	 * 
+	 * @return if the Interrupt Inhibit Bit is set in the PSU register
+	 */
+	public static boolean isIiSet() {
+		return 0x1 == ((CPU.psu >> 5) & 0x1);
+	}
+	
+	/**
+	 * returns the current stack pointer (stored in PSU register)
+	 * 
+	 * @return the current stack pointer
+	 */
+	public static short getSP() {
+		return (short) (CPU.psu & 0x7);
+	}
+	
+	/**
+	 * returns the current Condition Code (sotred in PSL register)
+	 * 
+	 * @return the current Condition Code
+	 */
+	public static short getCC() {
+		return (short) ((CPU.psl >> 6) & 0x3);
+	}
+
+	/**
+	 * if the Intermediate Carry Bit is set in the PSL register
+	 * 
+	 * @return if the Intermediate Carry Bit is set in the PSL register
+	 */
+	public static boolean isIdcSet() {
+		return 0x1 == ((CPU.psl >> 5) & 0x1);
+	}
+	
+	/**
+	 * if the Register Select Bit is set in the PSL register
+	 * 
+	 * @return if the Register Select Bit is set in the PSL register
+	 */
+	public static boolean isRsSet() {
+		return 0x1 == ((CPU.psl >> 4) & 0x1);
+	}
+	
+	/**
+	 * if the With Carry Bit is set in the PSL register
+	 * 
+	 * @return if the With Carry Bit is set in the PSL register
+	 */
+	public static boolean isWcSet() {
+		return 0x1 == ((CPU.psl >> 3) & 0x1);
+	}
+	
+	/**
+	 * if the Overflow Bit is set in the PSL register
+	 * 
+	 * @return if the Overflow Bit is set in the PSL register
+	 */
+	public static boolean isOvfSet() {
+		return 0x1 == ((CPU.psl >> 2) & 0x1);
+	}
+	
+	/**
+	 * if the Compare Bit is set in the PSL register
+	 * 
+	 * @return if the Compare Bit is set in the PSL register
+	 */
+	public static boolean isComSet() {
+		return 0x1 == ((CPU.psl >> 1) & 0x1);
+	}
+	
+	/**
+	 * if the Carry Bit is set in the PSL register
+	 * 
+	 * @return if the Carry Bit is set in the PSL register
+	 */
+	public static boolean isCSet() {
+		return 0x1 == (CPU.getPSL() & 0x1);
+	}
 	
 	// == END GETTER ==
 	
 	// == BEGIN SETTER ==
+	
+	/**
+	 * set the value of the register specified by i to the given value val
+	 * 
+	 * @param i to specify the register (valid are values from 0 to 3)
+	 * @param val the value which should be set
+	 * @throws CpuInvalidRegisterException if the given i is invalid
+	 */
+	private static void setRegister(int i, short val) throws CpuInvalidRegisterException {
+		val = (short) (val & 0xff);
+		
+		switch (i) {
+			case 0:
+				CPU.setR0(val);
+				break;
+			case 1:
+				if(CPU.isRsSet()) {
+					CPU.setR4(val);
+				}
+				else {
+					CPU.setR1(val);
+				}
+				break;
+			case 2:
+				if(CPU.isRsSet()) {
+					CPU.setR5(val);
+				}
+				else {
+					CPU.setR2(val);
+				}
+				break;
+			case 3:
+				if(CPU.isRsSet()) {
+					CPU.setR6(val);
+				}
+				else {
+					CPU.setR3(val);
+				}
+				break;
+			default:
+				throw new CpuInvalidRegisterException();
+		}
+	}
 	
 	// == END SETTER ==
 	
@@ -125,7 +289,7 @@ public class CPU {
 	public static boolean isOpcodeInvalid(short opcode) {
 		opcode = (short) (opcode & 0xFF);
 		
-		// see page 53 of Berstein et al for the invalid opcodes
+		// see page 53 of Bernstein et al for the invalid opcodes
 		return 0x00 == opcode 
 				|| 0x10 == opcode 
 				|| 0x11 == opcode 
@@ -158,7 +322,7 @@ public class CPU {
 	public static short getByteLengthForOpcode(short opcode) {
 		opcode = (short) (opcode & 0xFF);
 		
-		// see page 53 of Berstein et al for the byte length of the instructions
+		// see page 53 of Bernstein et al for the byte length of the instructions
 		if (	// this is the first column in the diagram
 				(opcode & 0x0F) <= 0x03 
 				// this is the first exception (RETC) in the second column (only 1 byte)
@@ -1217,10 +1381,7 @@ public static void process0x8C_0x8F(short opcode, short param1) {
 		}
 	}
 
-	// check if the Register-Select-Bit in PSL is set
-	public static boolean isRsSet() {
-		return 0x1 == ((CPU.getPSL() >> 4) & 0x1);
-	}
+
 
 	// return the r/x value of the opcode
 	public static short getRX(short opcode) {
@@ -1254,60 +1415,6 @@ public static void process0x8C_0x8F(short opcode, short param1) {
 
 		return addr;
 	}
-
-	// set register determined by i to val
-	private static void setRegister(int i, short val) throws CpuInvalidRegisterException {
-		val = (short) (val & 0xff);
-		
-		switch (i) {
-		case 0:
-			CPU.setR0(val);
-			break;
-		case 1:
-			CPU.setR1(val);
-			break;
-		case 2:
-			CPU.setR2(val);
-			break;
-		case 3:
-			CPU.setR3(val);
-			break;
-		case 4:
-			CPU.setR4(val);
-			break;
-		case 5:
-			CPU.setR5(val);
-			break;
-		case 6:
-			CPU.setR6(val);
-			break;
-		default:
-			throw new CpuInvalidRegisterException();
-		}
-	}
-
-	// get register by index i
-	public static short getRegister(int i) throws CpuInvalidRegisterException {
-		switch (i) {
-		case 0:
-			return CPU.getR0();
-		case 1:
-			return CPU.getR1();
-		case 2:
-			return CPU.getR2();
-		case 3:
-			return CPU.getR3();
-		case 4:
-			return CPU.getR4();
-		case 5:
-			return CPU.getR5();
-		case 6:
-			return CPU.getR6();
-		default:
-			throw new CpuInvalidRegisterException();
-		}
-	}
-
 
 
 
@@ -1460,15 +1567,7 @@ public static void process0x8C_0x8F(short opcode, short param1) {
 		return CPU.psu;
 	}
 
-	// check if the Carry-Bit in PSL is set
-	public static boolean isCSet() {
-		return 0x1 == (CPU.getPSL() & 0x1);
-	}
 
-	// check if the Interdigit Carry in PSL is set
-	public static boolean isIdcSet() {
-		return 0x1 == ((CPU.getPSL() >> 5) & 0x1);
-	}
 
 	// set psu
 	private static void setPSU(short psu) {
