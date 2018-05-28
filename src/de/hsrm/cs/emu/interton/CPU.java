@@ -313,14 +313,37 @@ public class CPU {
 		CPU.psl = CPU.getR0(); // done
 	}
 
-	public static void process0x38_0x3B(short opcode, short param1) {
-		short r = CPU.getRX(opcode);
+	/**
+	 * BSTR
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuStackPointerMismatchException
+	 */
+	public static void process0x38_0x3B(short opcode, short param1) throws CpuStackPointerMismatchException {
+		CPU.pushStackAddr((short) (CPU.pc + 3));
+		short v = CPU.getRX(opcode);
 		short CC = (short) (CPU.getPSL() >> 6);
-		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
-			CPU.pc = getPC() + 2;
+		if ((v == 0x03) || (CC == v)) {
+
+			pushStackAddr((short) (CPU.pc + 2));
+
+			boolean indirekt = (param1 & 0x80) == 0x80;
+			param1 = (short) (param1 & 0x7F);
+			if (param1 > 63)
+				param1 = (short) (param1 - 128);
+			if (!indirekt) {
+				CPU.pc = CPU.pc + param1;
+			} else {
+				// indirekte Adressierung
+				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) & 0x7F));
+			}
+
+			jumped = true;
 		} else {
 			jumped = false;
 		}
+
 	}
 
 	// BSTR gt
@@ -349,44 +372,6 @@ public class CPU {
 		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
 			CPU.pc = getPC() + 2;
 		}
-	}
-
-	// BSTA eq
-	public static void process0x3C(short opcode, short param1, short param2) {
-		short r = CPU.getRX(opcode);
-		short CC = (short) (CPU.getPSL() >> 6);
-		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
-			CPU.pc = getPC() + 3;
-		}
-
-	}
-
-	// BSTA gt
-	public static void process0x3D(short opcode, short param1, short param2) {
-		short r = CPU.getRX(opcode);
-		short CC = (short) (CPU.getPSL() >> 6);
-		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
-			CPU.pc = getPC() + 3;
-		}
-	}
-
-	// BSTA lt
-	public static void process0x3E(short opcode, short param1, short param2) {
-		short r = CPU.getRX(opcode);
-		short CC = (short) (CPU.getPSL() >> 6);
-		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
-			CPU.pc = getPC() + 3;
-		}
-	}
-
-	// BSTA un
-	public static void process0x3F(short opcode, short param1, short param2) {
-		short r = CPU.getRX(opcode);
-		short CC = (short) (CPU.getPSL() >> 6);
-		if ((r == 0x03) || ((r != 0x03) && (CC != r))) {
-			CPU.pc = getPC() + 3;
-		}
-
 	}
 
 	/**
@@ -480,7 +465,7 @@ public class CPU {
 
 	private static void setInterDigitCarry(boolean set) {
 		short psl = CPU.psl;
-		psl = (short) (set ? (psl | 0x10) : (psl & ~0x10));
+		psl = (short) (set ? (psl | 0x20) : (psl & ~0x20));
 		CPU.psl = psl;
 	}
 
@@ -580,7 +565,7 @@ public class CPU {
 		CPU.setRegister(CPU.getRegister(0), tmp);
 	}
 
-	//TODO ...
+	// TODO ...
 	// SUBI addiere bit 0-7 auf bit 8 und bit 9
 	public static void process0xA4_0xA7(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_7 = (short) (opcode & 0xFF); // 255
@@ -655,25 +640,20 @@ public class CPU {
 	 * 
 	 */
 	public static void process0x14_0x17(short opcode) throws CpuStackPointerMismatchException {
-		if ((opcode & 0x03) == 3 || (CPU.getPSL() & 0xC0) == (opcode & 0x03)) {
+		if ((opcode & 0x03) == 3 || ((CPU.getPSL() & 0xC0) >> 6) == (opcode & 0x03)) {
 			CPU.pc = CPU.popStackAddr();
 			CPU.jumped = true;
 		}
 	}
 
 	private static short popStackAddr() throws CpuStackPointerMismatchException {
-		short returnAddr = -1;
 		int sp = CPU.getPSU() & 0x7;
-		if (0 <= sp && sp < 8) {
-			returnAddr = CPU.subroutineStack[sp];
-
+		if (1 <= sp && sp < 8) {
 			// decrease stackpointer
 			CPU.setPSU((short) (CPU.getPSU() - 1));
-		}
-
-		if (-1 == returnAddr)
+			return CPU.subroutineStack[sp];
+		} else
 			throw new CpuStackPointerMismatchException();
-		return returnAddr;
 	}
 
 	/**
@@ -682,9 +662,12 @@ public class CPU {
 	 */
 	private static void pushStackAddr(short pc) throws CpuStackPointerMismatchException {
 		int sp = CPU.getPSU() & 0x7;
-		CPU.subroutineStack[sp + 1] = pc;
-		// increase stackpointer
-		CPU.setPSU((short) (CPU.getPSU() + 1));
+		if (0 <= sp && sp < 7) {
+			CPU.subroutineStack[sp + 1] = pc;
+			// increase stackpointer
+			CPU.setPSU((short) (CPU.getPSU() + 1));
+		} else
+			throw new CpuStackPointerMismatchException();
 	}
 
 	/**
@@ -1229,7 +1212,7 @@ public class CPU {
 		System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
 		System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
 		System.out.printf("# INS: %04d\n", CPU.instruction);
-		
+
 	}
 
 }
