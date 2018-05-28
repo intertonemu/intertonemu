@@ -339,17 +339,134 @@ public class CPU {
 	// EORZ
 	public static void process0x20_0x23(short opcode) throws CpuInvalidRegisterException {
 		short rx = CPU.getRX(opcode);
-		CPU.setRegister(0,(short)(CPU.getRegister(0) ^ getRegister(rx)));
+		short res = (short)(CPU.getRegister(0) ^ getRegister(rx));
+		if(res==0){
+			CPU.psl&= ~(1 << 6);
+			CPU.psl&= ~(1 << 7);
+		} else if(res>0){
+			CPU.psl&= ~(1 << 7);
+			CPU.psl|= 1 << 6;
+		} else {
+			CPU.psl&= ~(1 << 6);
+			CPU.psl|= 1 << 7;
+		}
+		CPU.setRegister(0,res);
 	}
 	
 	// EORI
 	public static void process0x24_0x27(short opcode, short param1) throws CpuInvalidRegisterException {
 			short rx = CPU.getRX(opcode);
-			CPU.setRegister(rx,(short)(getRegister(rx) ^ param1));
+			short res = (short)(getRegister(rx) ^ param1);
+			CPU.setRegister(rx,res);
+			if(res==0){
+				CPU.psl&= ~(1 << 6);
+				CPU.psl&= ~(1 << 7);
+			} else if(res>0){
+				CPU.psl&= ~(1 << 7);
+				CPU.psl|= 1 << 6;
+			} else {
+				CPU.psl&= ~(1 << 6);
+				CPU.psl|= 1 << 7;
+			}
 	}
 
 	// EORR
 	public static void process0x28_0x2B(short opcode, short param1) throws CpuInvalidRegisterException {
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short a = (short)(param1 & 0x7F);
+		int addr = CPU.getPC();
+		if((a&0x3F)!=0){
+			addr+= (~a)+1;
+		}
+		short b = GPU.getByte(addr);
+		if(i==0x1){
+			short b1 = GPU.getByte(addr+1);
+			addr=CPU.getAddr(b, b1);
+			b=GPU.getByte(addr);
+		}
+		short res = (short)(getRegister(rx) ^ param1);
+		CPU.setRegister(rx, (short)(CPU.getRegister(rx)^b));
+		if(res==0){
+			CPU.psl&= ~(1 << 6);
+			CPU.psl&= ~(1 << 7);
+		} else if(res>0){
+			CPU.psl&= ~(1 << 7);
+			CPU.psl|= 1 << 6;
+		} else {
+			CPU.psl&= ~(1 << 6);
+			CPU.psl|= 1 << 7;
+		}
+	}
+
+	// EORA
+	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short ist = CPU.getIST(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
+		
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if(i==0x1) {
+			//indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr+1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		short res = 0;
+		switch(ist) {
+			case 0:
+				// non-indexed
+				res = (short)(CPU.getRegister(rx)^GPU.getByte(addr));
+				CPU.setRegister(rx,res);
+				break;
+			case 1:
+				// indexed increment
+				CPU.r1++;
+				res = (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1));
+				CPU.setRegister(rx, res);
+				break;
+			case 2:
+				// indexed decrement
+				CPU.r1--;
+				res = (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1));
+				CPU.setRegister(rx, res);
+				break;
+			case 3:
+				// just indexed
+				res = (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1));
+				CPU.setRegister(rx, res);
+				break;
+			default:
+		}
+		if(res==0){
+			CPU.psl&= ~(1 << 6);
+			CPU.psl&= ~(1 << 7);
+		} else if(res>0){
+			CPU.psl&= ~(1 << 7);
+			CPU.psl|= 1 << 6;
+		} else {
+			CPU.psl&= ~(1 << 6);
+			CPU.psl|= 1 << 7;
+		}
+	}
+
+	// ADDZ
+	public static void process0x80_0x83(short opcode) throws CpuInvalidRegisterException {
+		short rx = CPU.getRX(opcode);
+		CPU.setRegister(0,(short)(CPU.getRegister(0) ^ getRegister(rx)));
+	}
+	
+	// ADDI
+	public static void process0x84_0x87(short opcode, short param1) throws CpuInvalidRegisterException {
+			short rx = CPU.getRX(opcode);
+			CPU.setRegister(rx,(short)(getRegister(rx) ^ param1));
+	}
+
+	// ADDR
+	public static void process0x88_0x8B(short opcode, short param1) throws CpuInvalidRegisterException {
 		short rx = CPU.getRX(opcode);
 		short i = CPU.getI(param1);
 		short a = (short)(param1 & 0x7F);
@@ -366,8 +483,8 @@ public class CPU {
 		CPU.setRegister(rx, (short)(CPU.getRegister(rx)^b));
 	}
 
-	// EORA
-	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+	// ADDA
+	public static void process0x8C_0x8F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		short rx = CPU.getRX(opcode);
 		short i = CPU.getI(param1);
 		short ist = CPU.getIST(param1);
