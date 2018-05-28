@@ -17,10 +17,6 @@ public class CPUTests {
 		assertEquals(0, CPU.getPC());
 	}
 	
-	//TODOs
-	
-	/*************************/
-	
 	@Test
 	public void testOpcode0xCC() {
 		
@@ -110,6 +106,4 @@ public class CPUTests {
 	public void testOpcode0xCF() {
 		
 	}
-	
-	/*************************/
 }
