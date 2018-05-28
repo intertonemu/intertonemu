@@ -353,13 +353,17 @@ public class CPU {
 		short rx = CPU.getRX(opcode);
 		short i = CPU.getI(param1);
 		short a = (short)(param1 & 0x7F);
-		int addr;
-
-		if(i==0x0){
-			
+		int addr = CPU.getPC();
+		if((a&0x3F)!=0){
+			addr+= ~(a+1);
 		}
-		else if(i==0x1){
+		short b = GPU.getByte(addr);
+		if(i==0x1){
+			short b1 = GPU.getByte(addr+1);
+			addr=CPU.getAddr(b, b1);
+			b=GPU.getByte(addr);
 		}
+		CPU.setRegister(rx, (short)(CPU.getRegister(rx)^b));
 	}
 
 	// EORA
@@ -386,13 +390,16 @@ public class CPU {
 			case 1:
 				// indexed increment
 				CPU.r1++;
+				CPU.setRegister(rx, (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1)));
 				break;
 			case 2:
 				// indexed decrement
 				CPU.r1--;
+				CPU.setRegister(rx, (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1)));
 				break;
 			case 3:
 				// just indexed
+				CPU.setRegister(rx, (short)(CPU.getRegister(rx)^GPU.getByte(addr+CPU.r1)));
 				break;
 			default:
 		}
