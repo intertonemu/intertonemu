@@ -336,7 +336,7 @@ public class CPU {
 				CPU.pc = CPU.pc + param1;
 			} else {
 				// indirekte Adressierung
-				CPU.pc = CPU.pc + (short) ( (GPU.getByte(param1) & 0x7F));
+				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) & 0x7F));
 			}
 
 			jumped = true;
@@ -640,7 +640,7 @@ public class CPU {
 	 * 
 	 */
 	public static void process0x14_0x17(short opcode) throws CpuStackPointerMismatchException {
-		if ((opcode & 0x03) == 3 || (CPU.getPSL() & 0xC0) == (opcode & 0x03)) {
+		if ((opcode & 0x03) == 3 || ((CPU.getPSL() & 0xC0) >> 6) == (opcode & 0x03)) {
 			CPU.pc = CPU.popStackAddr();
 			CPU.jumped = true;
 		}
