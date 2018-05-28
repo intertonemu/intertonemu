@@ -355,6 +355,94 @@ public class CPU {
 		// done
 	}
 	
+	/* ########## 0x40 - 0x4F ########## */
+	//ANDZ bit 0 und 1 mit register R0 verunden
+	public static void process0x41_0x43(short opcode) throws CpuInvalidRegisterException {
+		short bit0_1 = (short) (opcode & 0x3);
+		short tmp = (short) (CPU.getRegister(0) & bit0_1);
+		
+		CPU.setRegister(CPU.getRegister(0), tmp);
+	}
+	
+	//ANDI bit0-7 mit bit8und9 verunden (IN WELCHES REG SPEICHERN?)
+	public static void process0x44_0x47(short opcode) throws CpuInvalidRegisterException {
+		short bit0_7 = (short) (opcode & 0xFF);   // 255
+		short bit8_9 = (short) (opcode & 0x300); //bit8 und 9
+		short tmp = (short) (bit8_9 & bit0_7);
+		
+		CPU.setRegister(bit0_7, tmp); // welches reg??	
+	}
+	
+	//ANDR bit0-6 mit bit8-9 verunden (IN WELCHES REG SPEICHERN?)
+	public static void process0x48_0x4B(short opcode) throws CpuInvalidRegisterException {
+		short bit0_6 = (short) (opcode & 0x7F);
+		short bit8_9 = (short) (opcode & 0x300);
+		short tmp = (short) (bit0_6 & bit8_9);
+		
+		CPU.setRegister(bit0_6, tmp);
+	}
+	
+	//ANDA bit0-7 mit bit16-17 verunden (IN WELCHES REG SPEICHERN?)
+	public static void process0x4C_0x4F(short opcode) throws CpuInvalidRegisterException {
+		short bit0_12 = (short) (opcode & 0x1FFF);
+		short bit16_17 = (short) (opcode & 0x30000);
+		short tmp = (short) (bit0_12 & bit16_17);
+		
+		CPU.setRegister(bit0_12, tmp);
+		
+	}
+	
+	
+	
+	/* ####### 0xA0 - 0xAF ######## */
+	//SUBZ addiere bit 0 und bit 1 auf register 0
+	public static void process0xA0_0xA3(short opcode) throws CpuInvalidRegisterException {
+		short bit0 = (short) (opcode & 0x1);
+		short bit1 = (short) (opcode & 0x2);
+		short tmp  = (short) (bit0 + bit1);
+		
+		CPU.setRegister(CPU.getRegister(0), tmp);	
+	}
+	
+	//SUBI addiere bit 0-7 auf bit 8 und bit 9
+	public static void process0xA4_0xA7(short opcode) throws CpuInvalidRegisterException {
+		short bit0_7 = (short) (opcode & 0xFF);		//255
+		short bit8   = (short) (opcode & 0x100);	//256 
+		short bit9	 = (short) (opcode & 0x101);	//257
+		
+		short ergBit8 = (short) (bit0_7 + bit8);
+		short ergBit9 = (short) (bit0_7 + bit9);
+		
+		CPU.setRegister(bit8, ergBit8);
+		CPU.setRegister(bit9, ergBit9);
+	}
+	
+	//SUBR addiere bit 0-6 auf bit 8 und 9
+	public static void process0xA8_0xAB(short opcode) throws CpuInvalidRegisterException {
+		short bit0_6 = (short) (opcode & 0x7F);		//127
+		short bit8   = (short) (opcode & 0x100);	//256 
+		short bit9	 = (short) (opcode & 0x101);	//257
+		
+		short ergBit8 = (short) (bit0_6 + bit8);
+		short ergBit9 = (short) (bit0_6 + bit9);
+		
+		CPU.setRegister(bit8, ergBit8);
+		CPU.setRegister(bit9, ergBit9);	
+	}
+	
+	//SUBA addiere bit 0-12 in bit 16 und 17
+	public static void process0xAC_0xAF(short opcode) throws CpuInvalidRegisterException {
+		short bit0_12 = (short) (opcode & 0x1FFF);	//8191(12 bit)
+		short bit16_17   = (short) (opcode & 0x30000); // (16 bit)
+		//short bit17   = (short) (opcode & 0x20000); 
+		
+		short ergBit16 = (short) (bit0_12 + bit16_17);
+		
+		
+		CPU.setRegister(bit16_17, ergBit16);
+	}
+	
+	
 	// STRA
 	public static void process0xCC_0xCF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		// see page 23 in Bernstein et al
