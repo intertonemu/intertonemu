@@ -25,6 +25,12 @@ public class GPU {
 		
 	}
 	
+	//Eingabe-Port D
+		public static short getInputD() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+	
 	// is addr video space?
 	public static boolean isAddrGpu(int addr) {
 		return false;
