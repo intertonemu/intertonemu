@@ -313,6 +313,28 @@ public class CPU {
 		CPU.psl = CPU.getR0(); // done
 	}
 
+	public static void process0x98_0x9B(short opcode, short param1) throws CpuInvalidRegisterException {
+		// (opcode & 0x03) => (bit 8 & 9)
+		short opcodeConditionCode = (short) (opcode & 0x03);
+		short programmstatusConditionCode = (short) (CPU.getPSL() & 0xC0);
+		if(opcodeConditionCode == 3) {
+			throw new CpuInvalidRegisterException();
+		}
+		if (programmstatusConditionCode != opcodeConditionCode) {
+			boolean indirekt = (param1 & 0x80) == 0x80;
+			param1 = (short) (param1 & 0x7F);
+			if (param1 > 63)
+				param1 = (short) (param1 - 128);
+			if (!indirekt) {
+				CPU.pc = CPU.pc + param1;
+			} else {
+				// indirekte Adressierung
+				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1 + 1) & 0xFF));
+			}
+		}
+		jumped = false;
+	}
+
 	/**
 	 * BSTR
 	 * 
@@ -407,7 +429,7 @@ public class CPU {
 	 * STRR
 	 * 
 	 * @param opcode
-	 * @param param1
+	 * @param parambbbbbbbbbbbbb1
 	 */
 	public static void process0xC8_0xCB(short opcode, short param1) {
 		// TODO: STRR
@@ -1196,6 +1218,8 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
+		if (CPU.instruction == 1000)
+			System.exit(1);
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
@@ -1205,19 +1229,19 @@ public class CPU {
 			CPU.step();
 		}
 	}
-	
+
 	public static void dumpStatus() {
 		System.out.printf("%d ", CPU.instruction);
 		System.out.printf("%04X\n", CPU.pc);
 	}
 
-//	public static void dumpStatus() {
-//		System.out.printf("==\nPC: %04X ", CPU.getPC());
-//		System.out.printf("# R0: %02X ", CPU.getR0() & 0xFF);
-//		System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
-//		System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
-//		System.out.printf("# INS: %04d\n", CPU.instruction);
-//
-//	}
+	// public static void dumpStatus() {
+	// System.out.printf("==\nPC: %04X ", CPU.getPC());
+	// System.out.printf("# R0: %02X ", CPU.getR0() & 0xFF);
+	// System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
+	// System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
+	// System.out.printf("# INS: %04d\n", CPU.instruction);
+	//
+	// }
 
 }
