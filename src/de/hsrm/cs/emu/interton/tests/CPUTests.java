@@ -118,7 +118,7 @@ public class CPUTests {
 	@Test
 	public void testOpcode0x12() {
 		short r0_old = CPU.getR0();
-		CPU.process1x02(CPU.getPSU());
+		CPU.process1((short) 0x12);
 		short r0_new = CPU.getR0();
 		
 		assertEquals(CPU.getPSU(), r0_new);
