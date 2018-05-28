@@ -254,6 +254,8 @@ public class CPU {
 
 	// set register determined by i to val
 	private static void setRegister(int i, short val) throws CpuInvalidRegisterException {
+		val = (short) (val & 0xff);
+		
 		switch (i) {
 		case 0:
 			CPU.setR0(val);
@@ -879,6 +881,9 @@ public class CPU {
 
 	// BDRR
 	public static void process0xF8_0xFB(short opcode, short param1) throws CpuInvalidRegisterException {
+		if(CPU.instruction==741) {
+			System.out.println("Debug");
+		}
 		// (opcode & 0x03) => (bit 8 & 9)
 		short r = (short) (opcode & 0x03);
 		CPU.setRegister(r, (short) (CPU.getRegister(r) - 1));
@@ -1011,10 +1016,44 @@ public class CPU {
 	}
 
 	// LODA
-	public static void process0x0C_0x0F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
+	public static void process0x0C_0x0F(short opcode, short param1, short param2) throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short ist = CPU.getIST(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
 
-		setRegister(r, (short) (getAddrUpper(param1) & getAddrLower(param2)));
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if (i == 0x1) {
+			// indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr + 1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+
+		switch (ist) {
+		case 0:
+			// non-indexed
+			CPU.setRegister(rx, GPU.getByte(addr));
+			break;
+//		case 1:
+//			// indexed increment
+//			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+//			GPU.setByte(addr + CPU.getRegister(rx), CPU.getRegister(0));
+//			break;
+		case 2:
+			// indexed decrement
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
+			CPU.setRegister(0, (short) (0xff & GPU.getByte(addr + CPU.getRegister(rx))));
+			break;
+		case 3:
+			// just indexed
+			CPU.setRegister((short)0, (short) (0xff & GPU.getByte(addr + CPU.getRegister(rx))));
+			break;
+		default:
+			throw new CpuOpcodeInvalidException();
+		}
 	}
 
 	// IORZ (load logic OR of r and r0 into r0)
@@ -1232,14 +1271,17 @@ public class CPU {
 
 	public static void dumpStatus() {
 		System.out.printf("%d ", CPU.instruction);
-		System.out.printf("%04X\n", CPU.pc);
+		System.out.printf("%04X ", CPU.pc);
+		System.out.printf("R0: %02X ", CPU.getR0());
+		System.out.printf("R1: %02X ", CPU.getR1());
+		System.out.printf("R2: %02X ", CPU.getR2());
+		System.out.printf("R3: %02X ", CPU.getR3());
+		System.out.printf("PSL: %02X ", CPU.getPSL());
+		System.out.print("\n");
 	}
 
 	// public static void dumpStatus() {
 	// System.out.printf("==\nPC: %04X ", CPU.getPC());
-	// System.out.printf("# R0: %02X ", CPU.getR0() & 0xFF);
-	// System.out.printf("# R1: %02X ", CPU.getR1() & 0xFF);
-	// System.out.printf("# PSL: %02X ", CPU.getPSL() & 0xFF);
 	// System.out.printf("# INS: %04d\n", CPU.instruction);
 	//
 	// }
