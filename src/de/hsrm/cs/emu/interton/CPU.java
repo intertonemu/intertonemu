@@ -8,46 +8,184 @@ import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
 import de.hsrm.cs.emu.interton.exception.CpuStackPointerMismatchException;
 
-//test Se
+/**
+ * A class which holds the functionalities of the Signetics 2650 CPU
+ */
 public class CPU {
-
-	// Program counter
+	
+	/* Abbreviations:
+	 * ACC = Accumulator (same as R0)
+	 * C = Carry Bit in PSW
+	 * CC = Condition Code in PSW
+	 * COM = Compare Bit in PSW
+	 * F = Flag Bit in PSW
+	 * IAR = Instruction Address Register (similar to PC, but holds the address of the next register)
+	 * IDC = Intermediate Carry Bit in PSW
+	 * II = Interrupt Inhibit Bit in PSW
+	 * IR = Instruction Register
+	 * OVF = Overflow Bit in PSW
+	 * PC = Program Counter
+	 * PSL = Program Status Lower
+	 * PSU = Program Status Upper
+	 * PSW = Program Status Word (16 Bit register of PSU combined with PSL
+	 * R0 = Register 0
+	 * R1 = Register 1
+	 * R2 = Register 2
+	 * R3 = Register 3
+	 * R4 = Register 4
+	 * R5 = Register 5
+	 * R6 = Register 6
+	 * RS = Register Select Bit in PSW
+	 * S = Sense Bit in PSW
+	 * SP = Stack Pointer in PSW
+	 * WC = With/Without Carry Bit in PSW
+	 */
+	
+	// == BEGIN INSTANCE VARIBALES ==
+	
+	/**
+	 * PC = Program Counter.
+	 */
 	private static int pc = 0;
-
-	// Register 0 (ACC)
+	
+	/**
+	 * R0 = Register 0. This is the ACC = Accumulator. This register is always available nevertheless the RS bit in the PSW.
+	 */
 	private static short r0 = 0;
 
-	// Register 1
+	/**
+	 * R1 = Register 1. This register can only be accessed if RS=0.
+	 */
 	private static short r1 = 0;
 
-	// Register 2
+	/**
+	 * R2 = Register 2. This register can only be accessed if RS=0.
+	 */
 	private static short r2 = 0;
 
-	// Register 3
+	/**
+	 * R3 = Register 3. This register can only be accessed if RS=0.
+	 */
 	private static short r3 = 0;
 
-	// Register 4
+	/**
+	 * R4 = Register 4. This register can only be accessed if RS=1.
+	 */
 	private static short r4 = 0;
 
-	// Register 5
+	/**
+	 * R5 = Register 5. This register can only be accessed if RS=1.
+	 */
 	private static short r5 = 0;
 
-	// Register 6
+	/**
+	 * R6 = Register 6. This register can only be accessed if RS=1.
+	 */
 	private static short r6 = 0;
 
-	// Upper Program Status Register
+	/**
+	 * Upper 8 Bit of the PSW, also called PSU.
+	 */
 	private static short psu = 0;
 
-	// Lower Program Status Register
+	/**
+	 * Lower 8 Bit of the PSW, also called PSL.
+	 */
 	private static short psl = 0;
 
-	// Stack pointer (maybe not needed, should be in PSU(0..2))
-	private static short sp = 0;
-
-	// hide constructor
+	// == END INSTANCE VARIABLES ==
+	
+	// == BEGIN CONSTRUCTIR
+	
+	/**
+	 * a hidden constructor which never will be used
+	 */
 	private CPU() {
 
 	}
+	
+	// == END CONSTRUCTOR
+	
+	// == BEGIN GETTER
+	
+	// == END GETTER
+	
+	// == BEGIN SETTER
+	
+	// == END SETTER
+	
+	// == BEGIN HELPER METHODS
+	
+	/**
+	 * returns if the given opcode is invalid for the cpu
+	 * 
+	 * @param opcode the opcode which should be tested
+	 * @return if the given opcode is invalid
+	 */
+	public static boolean isOpcodeInvalid(short opcode) {
+		opcode = (short) (opcode & 0xFF);
+		
+		// see page 53 of Berstein et al for the invalid opcodes
+		return 0x00 == opcode 
+				|| 0x10 == opcode 
+				|| 0x11 == opcode 
+				|| 0x90 == opcode 
+				|| 0x91 == opcode 
+				|| 0xB6 == opcode
+				|| 0xB7 == opcode 
+				|| 0xC4 == opcode 
+				|| 0xC5 == opcode 
+				|| 0xC6 == opcode 
+				|| 0xC7 == opcode;
+	}
+	
+	/**
+	 * returns if the given opcode is valid for the cpu
+	 * 
+	 * @param opcode the opcode which should be tested
+	 * @return if the given opcode is valid
+	 */
+	public static boolean isOpcodeValid(short opcode) {
+		return !isOpcodeInvalid((short) (opcode & 0xFF));
+	}
+	
+	/**
+	 * returns the length of the given opcode
+	 * 
+	 * @param opcode the opcode which length should be returned
+	 * @return the length in byte of the given instruction (can only be 1 [byte], 2 [byte] or 3 [byte])
+	 */
+	public static short getByteLengthForOpcode(short opcode) {
+		opcode = (short) (opcode & 0xFF);
+		
+		// see page 53 of Berstein et al for the byte length of the instructions
+		if (	// this is the first column in the diagram
+				(opcode & 0x0F) <= 0x03 
+				// this is the first exception (RETC) in the second column (only 1 byte)
+				|| (opcode & 0xF0) == 0x10 && (opcode & 0x0F) >= 0x04 && (opcode & 0x0F) <= 0x07
+				// this is the second exception (RETE) in the second column (only 1 byte)
+				|| (opcode & 0xF0) == 0x30 && (opcode & 0x0F) >= 0x04 && (opcode & 0x0F) <= 0x07
+				// this is the third exception (DAR) in the second column (only 1 byte)
+				|| (opcode & 0xF0) == 0x90 && (opcode & 0x0F) >= 0x04 && (opcode & 0x0F) <= 0x07
+			) {
+			return 1; // 1 byte
+		} else if ((opcode & 0x0F) >= 0x04 && (opcode & 0x0F) <= 0x0B) {
+			// rest of second and third column is always 2 byte
+			return 2; // 2 byte
+		} else if ((opcode & 0x0F) >= 0x0C) {
+			// fourth column is always 3 byte
+			return 3; // 3 byte
+		} else {
+			// should not happen
+			return -1; // -1 signalizes an error
+		}
+	}
+	
+	// == END HELPER METHODS
+	
+	// == BEGIN OPCODE METHODS
+	
+	// == END OPCODE METHODS
 
 	// Rücksprungadreßspeicher
 	// stack
@@ -58,32 +196,11 @@ public class CPU {
 
 	private static int instruction = 1;
 
-	// is opcode invalid?
-	public static boolean isOpcodeInvalid(short opcode) {
-		// TODO probably easier to find a similarity on bit level
-		return 0x00 == opcode || 0x10 == opcode || 0x11 == opcode || 0x90 == opcode || 0x91 == opcode || 0xB6 == opcode
-				|| 0xB7 == opcode || 0xC4 == opcode || 0xC5 == opcode || 0xC6 == opcode || 0xC7 == opcode;
-	}
 
-	// is opcode valid?
-	public static boolean isOpcodeValid(short opcode) {
-		return !isOpcodeInvalid(opcode);
-	}
 
-	public static short getByteLengthForOpcode(short opcode) {
-		if ((opcode & 0xF) <= 0x3 || /* linke spalte im diagramm */
-				(opcode & 0xF0) == 0x10 && (opcode & 0xF) >= 0x4 && (opcode & 0xF) <= 0x7
-				|| (opcode & 0xF0) == 0x30 && (opcode & 0xF) >= 0x4 && (opcode & 0xF) <= 0x7
-				|| (opcode & 0xF0) == 0x90 && (opcode & 0xF) >= 0x4 && (opcode & 0xF) <= 0x7) {
-			return 1;
-		} else if ((opcode & 0xF) >= 0x4 && (opcode & 0xF) <= 0xB) {
-			return 2;
-		} else if ((opcode & 0xF) >= 0xC) {
-			return 3;
-		} else {
-			return -1;
-		}
-	}
+
+
+	
 
 	// returns if there is only one variant of the opcode
 	// e.g. opcode=0xC0 => true since there is only one variant of this opcode
@@ -1272,11 +1389,6 @@ public class CPU {
 		return CPU.psl;
 	}
 
-	// get stack pointer
-	public static int getSP() {
-		return CPU.sp;
-	}
-
 	public static void step() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
@@ -1303,11 +1415,5 @@ public class CPU {
 		System.out.printf("PSL: %02X ", CPU.getPSL());
 		System.out.print("\n");
 	}
-
-	// public static void dumpStatus() {
-	// System.out.printf("==\nPC: %04X ", CPU.getPC());
-	// System.out.printf("# INS: %04d\n", CPU.instruction);
-	//
-	// }
 
 }
