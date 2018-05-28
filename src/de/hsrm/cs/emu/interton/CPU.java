@@ -211,13 +211,13 @@ public class CPU {
 			}
 		}
 		catch(NoSuchMethodException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 		catch(InvocationTargetException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 		catch(IllegalAccessException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 	}
 	
@@ -246,13 +246,13 @@ public class CPU {
 			}
 		}
 		catch(NoSuchMethodException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 		catch(InvocationTargetException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 		catch(IllegalAccessException ex) {
-			//TODO
+			ex.printStackTrace();
 		}
 	}
 	
@@ -609,15 +609,15 @@ public class CPU {
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			param1 = (short) (param1 & 0x7F);
 			if (param1 > 63)
-				param1 = (short) -(param1 & 0x6F);
+				param1 = (short) (param1 - 128);
 			if (!indirekt) {
 				CPU.pc = CPU.pc + param1;
 			} else {
 				// indirekte Adressierung
 				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1 + 1) & 0xFF));
 			}
-			CPU.jumped = true;
 		}
+		jumped = false;
 	}
 
 	/**
@@ -734,7 +734,7 @@ public class CPU {
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			param1 = (short) (param1 & 0x7F);
 			if (param1 > 63)
-				param1 = (short) -(param1 & 0x6F);
+				param1 = (short) (param1 -128);
 			if (!indirekt) {
 				CPU.pc = CPU.pc + param1;
 			} else {
@@ -774,7 +774,25 @@ public class CPU {
 		}
 	}
 
-	
+	//BDRR
+	public static void process0xF8_0xFB(short opcode, short param1) throws CpuInvalidRegisterException {
+		// (opcode & 0x03) => (bit 8 & 9)
+		short r = (short) (opcode & 0x03);
+		CPU.setRegister(r, (short) (CPU.getRegister(r)-1));
+		if (CPU.getRegister(r)!=0) {
+			boolean indirekt = (param1 & 0x80) == 0x80;
+			param1 = (short) (param1 & 0x7F);
+			if (param1 > 63)
+				param1 = (short) (param1 - 128);
+			if (!indirekt) {
+				CPU.pc = CPU.pc + param1;
+			} else {
+				// indirekte Adressierung
+				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1 + 1) & 0xFF));
+			}
+		}
+		jumped = false;
+	}
 	
 	//DAR --- 
 	public static void process0x94_0x97(short opcode) throws CpuInvalidRegisterException {
@@ -1109,7 +1127,7 @@ public class CPU {
 	}
 	
 	public static void dumpStatus() {
-		System.out.println("==\nPC:"+CPU.getPC());
+		System.out.printf("==\nPC: %04X\n", CPU.getPC());
 	}
 	
 }
