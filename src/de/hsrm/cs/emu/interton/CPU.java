@@ -1055,6 +1055,30 @@ public class CPU {
 			throw new CpuOpcodeInvalidException();
 		}
 	}
+	
+	public static void process0xF0_0xF3(short opcode) throws CpuInvalidRegisterException {
+		//TODO
+	}
+	
+	public static void process0x9B(short opcode, short param1) {
+		//TODO
+	}
+	
+	public static void process0xF4_0xF7(short opcode, short param1) {
+		//TODO
+	}
+	
+	public static void process0xB4(short opcode, short param1) throws CpuInvalidRegisterException {
+		//TODO
+	}
+	
+	public static void process0x58_0x5B(short opcode, short param1) throws CpuInvalidRegisterException {
+		//TODO
+	}
+	
+	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
+		//TODO
+	}
 
 	// IORZ (load logic OR of r and r0 into r0)
 	public static void process0x60_0x63(short opcode) throws CpuInvalidRegisterException {
