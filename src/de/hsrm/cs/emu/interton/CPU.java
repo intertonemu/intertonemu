@@ -87,7 +87,7 @@ public class CPU {
 	/**
 	 * Upper 8 Bit of the PSW, also called PSU.
 	 */
-	private static short psu = 0x80; // Sense Bit is always set
+	private static short psu = 0x80; // Sense Bit is connected to VRST of 2621. So we have to set this when we do the VBLANK
 
 	/**
 	 * Lower 8 Bit of the PSW, also called PSL.
