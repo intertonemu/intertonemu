@@ -137,5 +137,11 @@ public class GPU {
 			return Short.parseShort(s_rscore, 10); // convert bcd to dez
 		}
 	}
+
+	//Eingabe-Port D
+	public static short getInputD() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 }
