@@ -500,7 +500,7 @@ public class CPU {
 	}
 
 	// ANDI bit0-7 mit bit8und9 verunden (IN WELCHES REG SPEICHERN?)
-	public static void process0x44_0x47(short opcode) throws CpuInvalidRegisterException {
+	public static void process0x44_0x47(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_7 = (short) (opcode & 0xFF); // 255
 		short bit8_9 = (short) (opcode & 0x300); // bit8 und 9
 		short tmp = (short) (bit8_9 & bit0_7);
@@ -1484,8 +1484,8 @@ public static void process0x8C_0x8F(short opcode, short param1) {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		if (CPU.instruction == 1000)
-			System.exit(1);
+//		if (CPU.instruction == 1000)
+//			System.exit(1);
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
