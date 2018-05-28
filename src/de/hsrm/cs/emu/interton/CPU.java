@@ -169,9 +169,10 @@ public class CPU {
 			Method method = CPU.class.getMethod(methodName, short.class);
 			method.invoke(null, opcode);
 			
-			if(true//no jump
-					) {
-			CPU.pc = CPU.pc + 1;
+			if (!jumped) {
+				CPU.pc = CPU.pc + 1;
+			} else {
+				jumped = false;
 			}
 		}
 		catch(NoSuchMethodException ex) {
@@ -203,9 +204,10 @@ public class CPU {
 			Method method = CPU.class.getMethod(methodName, short.class, short.class);
 			method.invoke(null, opcode, param1);
 			
-			if(true//no jump
-					) {
-			CPU.pc = CPU.pc + 2;
+			if (!jumped) {
+				CPU.pc = CPU.pc + 2;
+			} else {
+				jumped = false;
 			}
 		}
 		catch(NoSuchMethodException ex) {
@@ -237,9 +239,10 @@ public class CPU {
 			Method method = CPU.class.getMethod(methodName, short.class, short.class, short.class);
 			method.invoke(null, opcode, param1, param2);
 			
-			if(true//no jump
-					) {
-			CPU.pc = CPU.pc + 3;
+			if (!jumped) {
+				CPU.pc = CPU.pc + 3;
+			} else {
+				jumped = false;
 			}
 		}
 		catch(NoSuchMethodException ex) {
