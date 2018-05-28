@@ -630,11 +630,8 @@ public class CPU {
 	public static void process0x38_0x3B(short opcode, short param1) throws CpuStackPointerMismatchException {
 		CPU.pushStackAddr((short) (CPU.pc + 3));
 		short v = CPU.getRX(opcode);
-		short CC = (short) (CPU.getPSL() >> 6);
+		short CC = CPU.getCC();
 		if ((v == 0x03) || (CC == v)) {
-
-			pushStackAddr((short) (CPU.pc + 2));
-
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			param1 = (short) (param1 & 0x7F);
 			if (param1 > 63)
@@ -645,8 +642,7 @@ public class CPU {
 				// indirekte Adressierung
 				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) & 0x7F));
 			}
-
-			jumped = true;
+			jumped = false;
 		} else {
 			jumped = false;
 		}
@@ -749,8 +745,28 @@ public class CPU {
 		// TODO
 	}
 
+	/**
+	 * BRNR
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuInvalidRegisterException
+	 */
 	public static void process0x58_0x5B(short opcode, short param1) throws CpuInvalidRegisterException {
-		// TODO
+		short register = CPU.getRX(opcode);
+		if (CPU.getRegister(register) != 0) {
+			boolean indirekt = (param1 & 0x80) == 0x80;
+			param1 = (short) (param1 & 0x7F);
+			if (param1 > 63)
+				param1 = (short) (param1 - 128);
+			if (!indirekt) {
+				CPU.pc = CPU.pc + param1;
+			} else {
+				// indirekte Adressierung
+				CPU.pc = CPU.pc + (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1 + 1) & 0xFF));
+			}
+			CPU.jumped = false;
+		}
 	}
 
 	public static void process0x5C_0x5F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
