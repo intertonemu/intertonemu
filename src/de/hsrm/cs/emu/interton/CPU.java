@@ -87,7 +87,7 @@ public class CPU {
 	/**
 	 * Upper 8 Bit of the PSW, also called PSU.
 	 */
-	private static short psu = 0x80; // Sense Bit is connected to VRST of 2621. So we have to set this when we do the VBLANK
+	private static short psu = 0x00; // Sense Bit is connected to VRST of 2621. So we have to set this when we do the VBLANK
 
 	/**
 	 * Lower 8 Bit of the PSW, also called PSL.
@@ -341,6 +341,10 @@ public class CPU {
 			return -1; // -1 signalizes an error
 		}
 	}
+	
+	public static void toggleSense() {
+		CPU.psu = (short) (CPU.psu ^ 0x80);
+	}
 
 	// == END HELPER METHODS ==
 
@@ -500,12 +504,12 @@ public class CPU {
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
-		if(CPU.pc==0x545) {
+		if(CPU.instruction==773) {
 			System.out.println("");
 		}
 		
 		short opcodeConditionCode = (short) (opcode & 0x03);
-		short programmstatusConditionCode = (short) (CPU.getPSL() & 0xC0);
+		short programmstatusConditionCode = (short) ((CPU.getPSL() & 0xC0) >> 6);
 		if (opcodeConditionCode == 3 || programmstatusConditionCode == opcodeConditionCode) {
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			param1 = (short) (param1 & 0x7F);
@@ -1096,8 +1100,36 @@ public class CPU {
 		// TODO
 	}
 
+	/**
+	 * TPSU
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuInvalidRegisterException
+	 */
 	public static void process0xB4(short opcode, short param1) throws CpuInvalidRegisterException {
-		// TODO
+		short bitmask = param1;
+		boolean testResult = true;
+		
+		for(int i=0; i<=7; i++) {
+			if(((bitmask >> i) & 0x01) == 0x01) {
+				// i. bit is set, so we need to test the i. bit in psu
+				if(((CPU.psu >> i) & 0x01) != 0x01) {
+					testResult = false;
+				}
+			}
+		}
+		
+		if(testResult) {
+			// CC = 00
+			CPU.psl &= ~(1 << 6);
+			CPU.psl &= ~(1 << 7);
+		}
+		else {
+			// CC = 10
+			CPU.psl &= ~(1 << 6);
+			CPU.psl |= 1 << 7;
+		}
 	}
 
 	public static void process0xB5(short opcode, short param1) throws CpuInvalidRegisterException {
@@ -1625,7 +1657,7 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		 if (CPU.instruction == 1200)
+		 if (CPU.instruction == 2000)
 		 System.exit(1);
 	}
 
@@ -1634,12 +1666,21 @@ public class CPU {
 			CPU.dumpStatus();
 			Clock.waitForNextCycle();
 			CPU.step();
+			//312 lines (PAL) => TV signal
+			//42 lines => VBLANK
+			
+			// TODO implement that in 312/354*17746 instructions in 0 
+			// and in 42/354*17746 instructions is 1
+			if(CPU.instruction % 1000 == 0) {
+				CPU.toggleSense();
+			}
+			
 		}
 	}
 
 	public static void dumpStatus() {
-		//System.out.printf("%d ", CPU.instruction);
-		System.out.printf("%04X", CPU.pc);
+		System.out.printf("%d ", CPU.instruction);
+		System.out.printf("%04X ", CPU.pc);
 //		System.out.printf("R0: %02X ", CPU.getR0());
 //		System.out.printf("R1: %02X ", CPU.getR1());
 //		System.out.printf("R2: %02X ", CPU.getR2());
