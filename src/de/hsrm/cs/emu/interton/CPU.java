@@ -538,7 +538,7 @@ public class CPU {
 	 */
 	public static void process0x1C_0x1F(short opcode, short param1, short param2) {
 		short opcodeConditionCode = (short) (opcode & 0x03);
-		short programmstatusConditionCode = (short) (CPU.getPSU() & 0xC0);
+		short programmstatusConditionCode = (short) ((CPU.getPSU() & 0xC0) >> 6);
 		if (opcodeConditionCode == 3 || programmstatusConditionCode == opcodeConditionCode) {
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			if (!indirekt) {
@@ -1017,7 +1017,7 @@ public class CPU {
 	public static void process0x98_0x9B(short opcode, short param1) throws CpuInvalidRegisterException {
 		// (opcode & 0x03) => (bit 8 & 9)
 		short opcodeConditionCode = (short) (opcode & 0x03);
-		short programmstatusConditionCode = (short) (CPU.getPSL() & 0xC0);
+		short programmstatusConditionCode = (short) ((CPU.getPSL() & 0xC0) >> 6);
 		if (opcodeConditionCode == 3) {
 			throw new CpuInvalidRegisterException();
 		}
