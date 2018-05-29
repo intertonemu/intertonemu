@@ -434,9 +434,8 @@ public class CPU {
 			result = GPU.getByte(CPU.pc + 2 + param1);
 		} else {
 			// indirekte Adressierung
-			param1 = (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1+1) & 0xFF));
-			param1 = GPU.getByte(param1);
-			result = GPU.getByte(CPU.pc + 2 + param1);
+			param1 = (short) ((GPU.getByte(CPU.pc + 2 + param1) << 8) | (GPU.getByte(CPU.pc + 2 + param1 + 1) & 0xFF));
+			result = GPU.getByte(param1);
 		}
 		// set content of target register to calculated result
 		CPU.setRegister(r, result);
