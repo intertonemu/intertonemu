@@ -278,6 +278,25 @@ public class CPU {
 			throw new CpuInvalidRegisterException();
 		}
 	}
+	
+	public static void setCC(short value) {
+		// equal to zero?
+		if (value == 0) {
+			// CC = %00
+			CPU.psl &= ~(1 << 6);
+			CPU.psl &= ~(1 << 7);
+		// negative
+		} else if (0x01 == ((value >> 7) & 0x01)) {
+			// CC = %10
+			CPU.psl &= ~(1 << 6);
+			CPU.psl |= 1 << 7;
+		// positive
+		} else {
+			// CC = %01
+			CPU.psl |= 1 << 6;
+			CPU.psl &= ~(1 << 7);
+		}
+	}
 
 	// == END SETTER ==
 
@@ -357,19 +376,21 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0x00_0x03(short opcode) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
-		short result = CPU.getRegister(r);
-		CPU.setRegister(0, result);
-
-		if (result == 0) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl &= ~(1 << 7);
-		} else if (0x01 == ((result >> 7) & 0x01)) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl |= 1 << 7;
-		} else {
-			CPU.psl &= ~(1 << 7);
-			CPU.psl |= 1 << 6;
+		// get source register
+		short r = CPU.getLast2Bits(opcode);
+		
+		// source register valid?
+		if(r > 0 && r<= 3) {
+			// get content of source register
+			short result = CPU.getRegister(r);
+			// set content of source register to register 0
+			CPU.setRegister(0, result);
+			// adjust CC in PSW accordingly
+			CPU.setCC(result);
+		}
+		else {
+			// LODZ r0 (0x00) is illegal opcode
+			throw new CpuInvalidRegisterException();
 		}
 	}
 
@@ -381,34 +402,54 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0x04_0x07(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		// get target register
+		short r = CPU.getLast2Bits(opcode);
+		// get byte which should be set
 		short result = param1;
-
+		// set content of target register to second byte of instruction
 		CPU.setRegister(r, result);
-
-		if (result == 0) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl &= ~(1 << 7);
-		} else if (0x01 == ((result >> 7) & 0x01)) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl |= 1 << 7;
-		} else {
-			CPU.psl &= ~(1 << 7);
-			CPU.psl |= 1 << 6;
-		}
+		// adjust CC in PSW accordingly
+		CPU.setCC(result);
 	}
 
-	// LODR (load value of calculated register (bit 0..6) into defined r(7..8))
+	/**
+	 * LODR
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuInvalidRegisterException
+	 */
 	public static void process0x08_0x0B(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
-
-		setRegister(r, (short) (param1 & 0xFFFF00));
+		// get target register
+		short r = getLast2Bits(opcode);
+		// check if indirect addressing
+		boolean indirekt = (param1 & 0x80) == 0x80;
+		// parse address out of second byte
+		param1 = (short) (param1 & 0x7F);
+		// correct signed value
+		if (param1 > 63)
+			param1 = (short) (param1 - 128);
+		short result = 0;
+		if (!indirekt) {
+			result = GPU.getByte(CPU.pc + 2 + param1);
+		} else {
+			// indirekte Adressierung
+			param1 = (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1+1) & 0xFF));
+			param1 = GPU.getByte(param1);
+			result = GPU.getByte(CPU.pc + 2 + param1);
+		}
+		// set content of target register to calculated result
+		CPU.setRegister(r, result);
+		// adjust CC in PSW accordingly
+		CPU.setCC(result);
 	}
+	
+	/****************************/
 
 	// LODA
 	public static void process0x0C_0x0F(short opcode, short param1, short param2)
 			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getI(param1);
 		short ist = CPU.getIST(param1);
 		short addr_u = CPU.getAddrUpper(param1);
@@ -553,19 +594,19 @@ public class CPU {
 
 	// EORZ
 	public static void process0x20_0x23(short opcode) throws CpuInvalidRegisterException {
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		CPU.setRegister(0, (short) (CPU.getRegister(0) ^ getRegister(rx)));
 	}
 
 	// EORI
 	public static void process0x24_0x27(short opcode, short param1) throws CpuInvalidRegisterException {
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		CPU.setRegister(rx, (short) (getRegister(rx) ^ param1));
 	}
 
 	// EORR
 	public static void process0x28_0x2B(short opcode, short param1) throws CpuInvalidRegisterException {
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getI(param1);
 		short a = (short) (param1 & 0x7F);
 		int addr = CPU.getPC();
@@ -583,7 +624,7 @@ public class CPU {
 
 	// EORA
 	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getI(param1);
 		short ist = CPU.getIST(param1);
 		short addr_u = CPU.getAddrUpper(param1);
@@ -637,7 +678,7 @@ public class CPU {
 	 */
 	public static void process0x38_0x3B(short opcode, short param1) throws CpuStackPointerMismatchException {
 		CPU.pushStackAddr((short) (CPU.pc + 2));
-		short v = CPU.getRX(opcode);
+		short v = CPU.getLast2Bits(opcode);
 		short CC = CPU.getCC();
 		if ((v == 0x03) || (CC == v)) {
 			boolean indirekt = (param1 & 0x80) == 0x80;
@@ -669,7 +710,7 @@ public class CPU {
 	public static void process0x3C_0x3F(short opcode, short param1, short param2)
 			throws CpuStackPointerMismatchException {
 		CPU.pushStackAddr((short) (CPU.pc + 3));
-		short v = CPU.getRX(opcode);
+		short v = CPU.getLast2Bits(opcode);
 		short CC = (short) (CPU.getPSL() >> 6);
 		if ((v == 0x03) || (CC == v)) {
 			boolean indirekt = (param1 & 0x80) == 0x80;
@@ -707,23 +748,14 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0x44_0x47(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		short r = CPU.getLast2Bits(opcode);
 		short v = param1;
 
 		short rvalue = CPU.getRegister(r);
 		short result = (short) ((rvalue & v) & 0xFF);
 		CPU.setRegister(r, result);
 
-		if (result == 0) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl &= ~(1 << 7);
-		} else if (0x01 == ((result >> 7) & 0x01)) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl |= 1 << 7;
-		} else {
-			CPU.psl &= ~(1 << 7);
-			CPU.psl |= 1 << 6;
-		}
+		CPU.setCC(result);
 	}
 
 	// ANDR bit0-6 mit bit8-9 verunden (IN WELCHES REG SPEICHERN?)
@@ -761,7 +793,7 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0x58_0x5B(short opcode, short param1) throws CpuInvalidRegisterException {
-		short register = CPU.getRX(opcode);
+		short register = CPU.getLast2Bits(opcode);
 		if (CPU.getRegister(register) != 0) {
 			boolean indirekt = (param1 & 0x80) == 0x80;
 			param1 = (short) (param1 & 0x7F);
@@ -783,14 +815,14 @@ public class CPU {
 
 	// IORZ (load logic OR of r and r0 into r0)
 	public static void process0x60_0x63(short opcode) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
+		short r = getLast2Bits(opcode);
 
 		setRegister(0, (short) (r & CPU.getR0()));
 	}
 
 	// IORI (load logic OR of r and value param1 into defined r)
 	public static void process0x64_0x67(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
+		short r = getLast2Bits(opcode);
 
 		setRegister(r, (short) (r & param1));
 	}
@@ -798,14 +830,14 @@ public class CPU {
 	// IORR (load logic OR of r and value of calculated register (bit 0..6) into
 	// defined r)
 	public static void process0x68_0x6B(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
+		short r = getLast2Bits(opcode);
 
 		setRegister(r, (short) (r & ((param1 & 0xFFFF00))));
 	}
 
 	// IORA
 	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		short r = getRX(opcode);
+		short r = getLast2Bits(opcode);
 
 		setRegister(r, (short) (r & ((getAddrUpper(param1) & getAddrLower(param2)))));
 	}
@@ -889,7 +921,7 @@ public class CPU {
 	 */
 	public static void process0x78_0x7B(short opcode, short param1)
 			throws CpuInvalidRegisterException, CpuStackPointerMismatchException {
-		short register = CPU.getRX(opcode);
+		short register = CPU.getLast2Bits(opcode);
 		if (CPU.getRegister(register) != 0) {
 			CPU.pushStackAddr((short) CPU.pc);
 			boolean indirekt = (param1 & 0x80) == 0x80;
@@ -922,7 +954,7 @@ public class CPU {
 	 */
 	public static void process0x7C_0x7F(short opcode, short param1, short param2)
 			throws CpuInvalidRegisterException, CpuStackPointerMismatchException {
-		short register = CPU.getRX(opcode);
+		short register = CPU.getLast2Bits(opcode);
 		if (CPU.getRegister(register) != 0) {
 			CPU.pushStackAddr((short) CPU.pc);
 			boolean indirekt = (param1 & 0x80) == 0x80;
@@ -949,7 +981,7 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0x84_0x87(short opcode, short param1) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		short r = CPU.getLast2Bits(opcode);
 		short rvalue = CPU.getRegister(r);
 		short rvalue_origi = CPU.getRegister(r);
 		rvalue = (short) (rvalue + param1);
@@ -993,7 +1025,7 @@ public class CPU {
 
 	// DAR ---
 	public static void process0x94_0x97(short opcode) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		short r = CPU.getLast2Bits(opcode);
 		short result = CPU.getRegister(r);
 		short leftSide = (short) (result >> 4);
 		short rightSide = (short) (result & 0xF);
@@ -1188,7 +1220,7 @@ public class CPU {
 
 	// STRZ
 	public static void process0xC0_0xC3(short opcode) throws CpuOpcodeInvalidException, CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		short r = CPU.getLast2Bits(opcode);
 
 		CPU.setRegister(r, CPU.getRegister(0));
 	}
@@ -1209,7 +1241,7 @@ public class CPU {
 	// STRA
 	public static void process0xCC_0xCF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		// see page 23 in Bernstein et al
-		short rx = CPU.getRX(opcode);
+		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getI(param1);
 		short ist = CPU.getIST(param1);
 		short addr_u = CPU.getAddrUpper(param1);
@@ -1276,7 +1308,7 @@ public class CPU {
 	 * @throws CpuInvalidRegisterException
 	 */
 	public static void process0xE4_0xE7(short opcode, short v) throws CpuInvalidRegisterException {
-		short r = CPU.getRX(opcode);
+		short r = CPU.getLast2Bits(opcode);
 		short rvalue = CPU.getRegister(r);
 		boolean com = (CPU.getPSL() & 0x2) == 0x2;
 
@@ -1505,7 +1537,7 @@ public class CPU {
 	}
 
 	// return the r/x value of the opcode
-	public static short getRX(short opcode) {
+	public static short getLast2Bits(short opcode) {
 		short rx = (short) (opcode & 0x3);
 		return (short) (rx + ((isRsSet() && rx != 0) ? 3 : 0));
 	}
@@ -1708,11 +1740,11 @@ public class CPU {
 	public static void dumpStatus() {
 		System.out.printf("%d ", CPU.instruction);
 		System.out.printf("%04X ", CPU.pc);
-//		System.out.printf("R0: %02X ", CPU.getR0());
-//		System.out.printf("R1: %02X ", CPU.getR1());
-//		System.out.printf("R2: %02X ", CPU.getR2());
-//		System.out.printf("R3: %02X ", CPU.getR3());
-//		System.out.printf("PSL: %02X ", CPU.getPSL());
+		System.out.printf("R0: %02X ", CPU.getR0());
+		System.out.printf("R1: %02X ", CPU.getR1());
+		System.out.printf("R2: %02X ", CPU.getR2());
+		System.out.printf("R3: %02X ", CPU.getR3());
+		System.out.printf("PSL: %02X ", CPU.getPSL());
 		System.out.print("\n");
 	}
 
