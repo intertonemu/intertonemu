@@ -1058,7 +1058,6 @@ public class CPU {
 		CPU.setRegister(CPU.getRegister(0), tmp);
 	}
 
-	// TODO ...
 	// SUBI addiere bit 0-7 auf bit 8 und bit 9
 	public static void process0xA4_0xA7(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_7 = (short) (opcode & 0xFF); // 255
@@ -1132,8 +1131,36 @@ public class CPU {
 		}
 	}
 
+	/**
+	 * TPSL
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuInvalidRegisterException
+	 */
 	public static void process0xB5(short opcode, short param1) throws CpuInvalidRegisterException {
-		// TODO
+		short bitmask = param1;
+		boolean testResult = true;
+		
+		for(int i=0; i<=7; i++) {
+			if(((bitmask >> i) & 0x01) == 0x01) {
+				// i. bit is set, so we need to test the i. bit in psu
+				if(((CPU.psl >> i) & 0x01) != 0x01) {
+					testResult = false;
+				}
+			}
+		}
+		
+		if(testResult) {
+			// CC = 00
+			CPU.psl &= ~(1 << 6);
+			CPU.psl &= ~(1 << 7);
+		}
+		else {
+			// CC = 10
+			CPU.psl &= ~(1 << 6);
+			CPU.psl |= 1 << 7;
+		}
 	}
 
 	// opcode 0xB6 and opcode 0xB7 are invalid
@@ -1175,7 +1202,7 @@ public class CPU {
 	 * @param param1
 	 */
 	public static void process0xC8_0xCB(short opcode, short param1) {
-		// TODO: STRR
+		// TODO
 		// siehe vgl absolut process0xCC_0xCF....
 	}
 
@@ -1217,7 +1244,7 @@ public class CPU {
 			GPU.setByte(addr + CPU.getRegister(rx), CPU.getRegister(0));
 			break;
 		default:
-			// TODO error
+			throw new CpuInvalidRegisterException();
 		}
 	}
 
