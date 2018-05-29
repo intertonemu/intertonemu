@@ -636,7 +636,7 @@ public class CPU {
 	 * @throws CpuStackPointerMismatchException
 	 */
 	public static void process0x38_0x3B(short opcode, short param1) throws CpuStackPointerMismatchException {
-		CPU.pushStackAddr((short) (CPU.pc + 3));
+		CPU.pushStackAddr((short) (CPU.pc + 2));
 		short v = CPU.getRX(opcode);
 		short CC = CPU.getCC();
 		if ((v == 0x03) || (CC == v)) {
@@ -1684,7 +1684,7 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		 if (CPU.instruction == 2000)
+		 if (CPU.instruction == 10000)
 		 System.exit(1);
 	}
 
