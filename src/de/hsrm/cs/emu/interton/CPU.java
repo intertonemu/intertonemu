@@ -431,10 +431,11 @@ public class CPU {
 			param1 = (short) (param1 - 128);
 		short result = 0;
 		if (!indirekt) {
-			result = GPU.getByte(CPU.pc + 2 + param1);
+			result = GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1);
 		} else {
 			// indirekte Adressierung
-			param1 = (short) ((GPU.getByte(CPU.pc + 2 + param1) << 8) | (GPU.getByte(CPU.pc + 2 + param1 + 1) & 0xFF));
+			param1 = (short) ((GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1) << 8) 
+					| (GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1 + 1) & 0xFF));
 			result = GPU.getByte(param1);
 		}
 		// set content of target register to calculated result
@@ -676,7 +677,7 @@ public class CPU {
 	 * @throws CpuStackPointerMismatchException
 	 */
 	public static void process0x38_0x3B(short opcode, short param1) throws CpuStackPointerMismatchException {
-		CPU.pushStackAddr((short) (CPU.pc + 2));
+		CPU.pushStackAddr((short) (CPU.pc + CPU.getByteLengthForOpcode(opcode)));
 		short v = CPU.getLast2Bits(opcode);
 		short CC = CPU.getCC();
 		if ((v == 0x03) || (CC == v)) {
