@@ -433,7 +433,7 @@ public class CPU {
 		if (!indirekt) {
 			result = GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1);
 		} else {
-			// indirekte Adressierung
+			// indirect addressing
 			param1 = (short) ((GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1) << 8) 
 					| (GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1 + 1) & 0xFF));
 			result = GPU.getByte(param1);
