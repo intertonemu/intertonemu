@@ -87,7 +87,8 @@ public class CPU {
 	/**
 	 * Upper 8 Bit of the PSW, also called PSU.
 	 */
-	private static short psu = 0x00; // Sense Bit is connected to VRST of 2621. So we have to set this when we do the VBLANK
+	private static short psu = 0x00; // Sense Bit is connected to VRST of 2621. So we have to set this when we do the
+										// VBLANK
 
 	/**
 	 * Lower 8 Bit of the PSW, also called PSL.
@@ -278,19 +279,19 @@ public class CPU {
 			throw new CpuInvalidRegisterException();
 		}
 	}
-	
+
 	public static void setCC(short value) {
 		// equal to zero?
 		if (value == 0) {
 			// CC = %00
 			CPU.psl &= ~(1 << 6);
 			CPU.psl &= ~(1 << 7);
-		// negative
+			// negative
 		} else if (0x01 == ((value >> 7) & 0x01)) {
 			// CC = %10
 			CPU.psl &= ~(1 << 6);
 			CPU.psl |= 1 << 7;
-		// positive
+			// positive
 		} else {
 			// CC = %01
 			CPU.psl |= 1 << 6;
@@ -360,7 +361,7 @@ public class CPU {
 			return -1; // -1 signalizes an error
 		}
 	}
-	
+
 	public static void toggleSense() {
 		CPU.psu = (short) (CPU.psu ^ 0x80);
 	}
@@ -378,17 +379,16 @@ public class CPU {
 	public static void process0x00_0x03(short opcode) throws CpuInvalidRegisterException {
 		// get source register
 		short r = CPU.getLast2Bits(opcode);
-		
+
 		// source register valid?
-		if(r > 0 && r<= 3) {
+		if (r > 0 && r <= 3) {
 			// get content of source register
 			short result = CPU.getRegister(r);
 			// set content of source register to register 0
 			CPU.setRegister(0, result);
 			// adjust CC in PSW accordingly
 			CPU.setCC(result);
-		}
-		else {
+		} else {
 			// LODZ r0 (0x00) is illegal opcode
 			throw new CpuInvalidRegisterException();
 		}
@@ -434,7 +434,7 @@ public class CPU {
 			result = GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1);
 		} else {
 			// indirect addressing
-			param1 = (short) ((GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1) << 8) 
+			param1 = (short) ((GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1) << 8)
 					| (GPU.getByte(CPU.pc + CPU.getByteLengthForOpcode(opcode) + param1 + 1) & 0xFF));
 			result = GPU.getByte(param1);
 		}
@@ -443,49 +443,69 @@ public class CPU {
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
 	}
-	
-	/****************************/
 
-	// LODA
+	/**
+	 * LODA
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @param param2
+	 * @throws CpuInvalidRegisterException
+	 * @throws CpuOpcodeInvalidException
+	 */
 	public static void process0x0C_0x0F(short opcode, short param1, short param2)
 			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
+		// get target register or index register
 		short rx = CPU.getLast2Bits(opcode);
-		short i = CPU.getI(param1);
-		short ist = CPU.getIST(param1);
+		// get if indirect addressing is used
+		short i = CPU.getIndirectAddressing(param1);
+		// get index control
+		short ic = CPU.getIndexControl(param1);
+		// get upper address part
 		short addr_u = CPU.getAddrUpper(param1);
+		// get lower address part
 		short addr_l = CPU.getAddrLower(param2);
 
+		// combine address to full address
 		int addr = CPU.getAddr(addr_u, addr_l);
 		if (i == 0x1) {
-			// indirect adressing
+			// indirect addressing
 			// get value at address and save as new address
 			addr_u = GPU.getByte(addr);
 			addr_l = GPU.getByte(addr + 1);
 			addr = CPU.getAddr(addr_u, addr_l);
 		}
 
-		switch (ist) {
+		short result = 0;
+		switch (ic) {
 		case 0:
 			// non-indexed
-			CPU.setRegister(rx, GPU.getByte(addr));
+			result = GPU.getByte(addr);
+			CPU.setRegister(rx, result);
 			break;
-		// case 1:
-		// // indexed increment
-		// CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
-		// GPU.setByte(addr + CPU.getRegister(rx), CPU.getRegister(0));
-		// break;
+		case 1:
+			// indexed increment
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, result);
+			break;
 		case 2:
 			// indexed decrement
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
-			CPU.setRegister(0, (short) (0xff & GPU.getByte(addr + CPU.getRegister(rx))));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, result);
 			break;
 		case 3:
 			// just indexed
-			CPU.setRegister((short) 0, (short) (0xff & GPU.getByte(addr + CPU.getRegister(rx))));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, result);
 			break;
 		default:
 			throw new CpuOpcodeInvalidException();
 		}
+		
+		// adjust CC in PSW accordingly
+		CPU.setCC(result);
 	}
 
 	// opcode 0x10 and opcode 0x11 are invalid
@@ -498,7 +518,12 @@ public class CPU {
 	 * @param opcode
 	 */
 	public static void process0x12(short opcode) {
-		CPU.setR0(CPU.getPSU());
+		short value = CPU.getPSU();
+		value = (short) (value & ~0x18); // ensure that bit 3 and bit 4 is 0
+		CPU.setR0(value);
+		
+		// adjust CC in PSW accordingly
+		CPU.setCC(value);
 	}
 
 	/**
@@ -509,7 +534,11 @@ public class CPU {
 	 * @param opcode
 	 */
 	public static void process0x13(short opcode) {
-		CPU.setR0(CPU.getPSL());
+		short value = CPU.getPSL();
+		CPU.setR0(value);
+		
+		// adjust CC in PSW accordingly
+		CPU.setCC(value);
 	}
 
 	/**
@@ -530,6 +559,8 @@ public class CPU {
 			CPU.jumped = true;
 		}
 	}
+	
+	/****************************/
 
 	/**
 	 * BCTR (Branch On Condition True Relative)
@@ -545,10 +576,10 @@ public class CPU {
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
-		if(CPU.instruction==773) {
+		if (CPU.instruction == 773) {
 			System.out.println("");
 		}
-		
+
 		short opcodeConditionCode = (short) (opcode & 0x03);
 		short programmstatusConditionCode = (short) ((CPU.getPSL() & 0xC0) >> 6);
 		if (opcodeConditionCode == 3 || programmstatusConditionCode == opcodeConditionCode) {
@@ -607,7 +638,7 @@ public class CPU {
 	// EORR
 	public static void process0x28_0x2B(short opcode, short param1) throws CpuInvalidRegisterException {
 		short rx = CPU.getLast2Bits(opcode);
-		short i = CPU.getI(param1);
+		short i = CPU.getIndirectAddressing(param1);
 		short a = (short) (param1 & 0x7F);
 		int addr = CPU.getPC();
 		if ((a & 0x3F) != 0) {
@@ -625,8 +656,8 @@ public class CPU {
 	// EORA
 	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		short rx = CPU.getLast2Bits(opcode);
-		short i = CPU.getI(param1);
-		short ist = CPU.getIST(param1);
+		short i = CPU.getIndirectAddressing(param1);
+		short ist = CPU.getIndexControl(param1);
 		short addr_u = CPU.getAddrUpper(param1);
 		short addr_l = CPU.getAddrLower(param2);
 
@@ -1141,22 +1172,21 @@ public class CPU {
 	public static void process0xB4(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bitmask = param1;
 		boolean testResult = true;
-		
-		for(int i=0; i<=7; i++) {
-			if(((bitmask >> i) & 0x01) == 0x01) {
+
+		for (int i = 0; i <= 7; i++) {
+			if (((bitmask >> i) & 0x01) == 0x01) {
 				// i. bit is set, so we need to test the i. bit in psu
-				if(((CPU.psu >> i) & 0x01) != 0x01) {
+				if (((CPU.psu >> i) & 0x01) != 0x01) {
 					testResult = false;
 				}
 			}
 		}
-		
-		if(testResult) {
+
+		if (testResult) {
 			// CC = 00
 			CPU.psl &= ~(1 << 6);
 			CPU.psl &= ~(1 << 7);
-		}
-		else {
+		} else {
 			// CC = 10
 			CPU.psl &= ~(1 << 6);
 			CPU.psl |= 1 << 7;
@@ -1173,22 +1203,21 @@ public class CPU {
 	public static void process0xB5(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bitmask = param1;
 		boolean testResult = true;
-		
-		for(int i=0; i<=7; i++) {
-			if(((bitmask >> i) & 0x01) == 0x01) {
+
+		for (int i = 0; i <= 7; i++) {
+			if (((bitmask >> i) & 0x01) == 0x01) {
 				// i. bit is set, so we need to test the i. bit in psu
-				if(((CPU.psl >> i) & 0x01) != 0x01) {
+				if (((CPU.psl >> i) & 0x01) != 0x01) {
 					testResult = false;
 				}
 			}
 		}
-		
-		if(testResult) {
+
+		if (testResult) {
 			// CC = 00
 			CPU.psl &= ~(1 << 6);
 			CPU.psl &= ~(1 << 7);
-		}
-		else {
+		} else {
 			// CC = 10
 			CPU.psl &= ~(1 << 6);
 			CPU.psl |= 1 << 7;
@@ -1242,8 +1271,8 @@ public class CPU {
 	public static void process0xCC_0xCF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		// see page 23 in Bernstein et al
 		short rx = CPU.getLast2Bits(opcode);
-		short i = CPU.getI(param1);
-		short ist = CPU.getIST(param1);
+		short i = CPU.getIndirectAddressing(param1);
+		short ist = CPU.getIndexControl(param1);
 		short addr_u = CPU.getAddrUpper(param1);
 		short addr_l = CPU.getAddrLower(param2);
 
@@ -1542,11 +1571,11 @@ public class CPU {
 		return (short) (rx + ((isRsSet() && rx != 0) ? 3 : 0));
 	}
 
-	public static short getI(short param1) {
+	public static short getIndirectAddressing(short param1) {
 		return (short) ((param1 >> 7) & 0x1);
 	}
 
-	public static short getIST(short param1) {
+	public static short getIndexControl(short param1) {
 		return (short) ((param1 >> 5) & 0x3);
 	}
 
@@ -1716,8 +1745,8 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		 if (CPU.instruction == 10000)
-		 System.exit(1);
+		if (CPU.instruction == 10000)
+			System.exit(1);
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
@@ -1725,15 +1754,15 @@ public class CPU {
 			CPU.dumpStatus();
 			Clock.waitForNextCycle();
 			CPU.step();
-			//312 lines (PAL) => TV signal
-			//42 lines => VBLANK
-			
-			// TODO implement that in 312/354*17746 instructions in 0 
+			// 312 lines (PAL) => TV signal
+			// 42 lines => VBLANK
+
+			// TODO implement that in 312/354*17746 instructions in 0
 			// and in 42/354*17746 instructions is 1
-			if(CPU.instruction % 1000 == 0) {
+			if (CPU.instruction % 1000 == 0) {
 				CPU.toggleSense();
 			}
-			
+
 		}
 	}
 
