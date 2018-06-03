@@ -1010,8 +1010,8 @@ public class CPU {
 		short r = CPU.getLast2Bits(opcode);
 		short lvalue = CPU.getR0();
 		short rvalue = CPU.getRegister(r);
-		short result = (short)((lvalue+rvalue)& 0xFF);
-		CPU.setR0(result);
+		short result = (short)(lvalue+rvalue);
+		CPU.setR0((short)(result& 0xFF));
 		CPU.setCarry(result >= 0x100);
 		CPU.setOverflow(result >= 0x100);
 		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
@@ -1059,11 +1059,50 @@ public class CPU {
 		}
 	}
 
-	public static void process0x88_0x8B(short opcode, short param1) {
-		// TODO
+	/**
+	 * ADDR
+	 * 
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @throws CpuInvalidRegisterException
+	 */
+	public static void process0x88_0x8B(short opcode, short param1) throws CpuInvalidRegisterException {
+		short rx = CPU.getLast2Bits(opcode);
+		short i = CPU.getIndirectAddressing(param1);
+		short a = (short) (param1 & 0x7F);
+		int addr = CPU.getPC();
+		if ((a & 0x3F) != 0) {
+			addr += ~(a + 1);
+		}
+		short b = GPU.getByte(addr);
+		if (i == 0x1) {
+			short b1 = GPU.getByte(addr + 1);
+			addr = CPU.getAddr(b, b1);
+			b = GPU.getByte(addr);
+		}
+		short rvalue = CPU.getRegister(rx);
+		short result=(short) ( rvalue+ b);
+		CPU.setRegister(rx, result);
+
+		CPU.setR0((short)(result& 0xFF));
+		CPU.setCarry(result >= 0x100);
+		CPU.setOverflow(result >= 0x100);
+		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
+
+		if (result == 0) {
+			CPU.psl &= ~(1 << 6);
+			CPU.psl &= ~(1 << 7);
+		} else if (result > 63) {
+			CPU.psl &= ~(1 << 6);
+			CPU.psl |= 1 << 7;
+		} else {
+			CPU.psl &= ~(1 << 7);
+			CPU.psl |= 1 << 6;
+		}
 	}
 
-	public static void process0x8C_0x8F(short opcode, short param1) {
+	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
 		// TODO
 	}
 
