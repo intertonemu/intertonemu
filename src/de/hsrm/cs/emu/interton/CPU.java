@@ -1558,7 +1558,7 @@ public class CPU {
 			short result = 0;
 			switch (ic) {
 			case 0:
-				// non-indexed
+				// non-indexed 
 				result = GPU.getByte(addr);
 				CPU.setRegister(rx, result);
 				break;
