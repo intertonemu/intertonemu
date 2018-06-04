@@ -829,7 +829,6 @@ public class CPU {
 	}
 
 	public static void process0x50_0x53(short opcode) throws CpuInvalidRegisterException {
-		// TODO Semih
 			
 			short r = CPU.getLast2Bits(opcode);
 			short result = CPU.getRegister(r);
@@ -1207,8 +1206,7 @@ public class CPU {
 
 	// 
 	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
-		// TODO Tiglat
-	
+
 		short bit0_1 = (short) (opcode & 0x03);
 		short result = CPU.getRegister((int) bit0_1);
 		short first_bit = (short) (result & 0x01);
@@ -1256,8 +1254,6 @@ public class CPU {
 
 	// ADDA
 	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
-		// TODO Soner
-
 		short i = CPU.getIndirectAddressing(param1);
 		short ic = CPU.getIndexControl(param1);
 		short alow = param2;
