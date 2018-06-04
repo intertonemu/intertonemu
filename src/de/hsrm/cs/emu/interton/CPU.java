@@ -557,7 +557,7 @@ public class CPU {
 	 * RETC (Return From Subroutine, Conditional)
 	 * 
 	 * Springe an die Speicheradresse, die zuletzt im Stapelzeiger abgelegt worden
-	 * ist, wenn Bit 0 und 1 mit den Statusbit CCO, CC1 übereinstimmen und
+	 * ist, wenn Bit 0 und 1 mit den Statusbit CCO, CC1 ï¿½bereinstimmen und
 	 * dekrementiere den Stapelzeiger. Springe unbedingt, wenn Bit 8 und 9 auf 1
 	 * gesetzt sind.
 	 * 
@@ -580,13 +580,13 @@ public class CPU {
 	 * BCTR (Branch On Condition True Relative)
 	 * 
 	 * Springe an die mit Bit 0 bis 6 errechnete Speicheradresse, wenn Bit 8 und 9
-	 * mit den Statusbit CC1 und CCO übereinstimmen. Springe unbedingt, wenn Bit 8
+	 * mit den Statusbit CC1 und CCO ï¿½bereinstimmen. Springe unbedingt, wenn Bit 8
 	 * und 9 auf 1 geseszt sind.
 	 * 
 	 * @param opcode
 	 * @param param1
 	 *            Untern 7 Bit = Relative Sprung Adresse (range: -63 and +63). Bit 8
-	 *            = Flag für indirekte Adressierung
+	 *            = Flag fï¿½r indirekte Adressierung
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
@@ -615,7 +615,7 @@ public class CPU {
 	 * BCTA (Branch On Condition True Absolute)
 	 * 
 	 * Springe an die mit Bit 0 bis 14 definierte Speicheradresse, wenn Bit 16 und
-	 * 17 mitden Statusbit CCO, CC1 übereinstimmen. Springe unbedingt, wenn Bit 8
+	 * 17 mitden Statusbit CCO, CC1 ï¿½bereinstimmen. Springe unbedingt, wenn Bit 8
 	 * und 9 auf 1 gesetzt sind.
 	 * 
 	 * @param opcode
@@ -902,8 +902,8 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * Lösche jedes Bit des oberen Programmstatuswortes, dessen äquivalentes Bit 0
-	 * bis 7 eine 1 enthält.
+	 * Lï¿½sche jedes Bit des oberen Programmstatuswortes, dessen ï¿½quivalentes Bit 0
+	 * bis 7 eine 1 enthï¿½lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -915,8 +915,8 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * Lösche jedes Bit des unteren Programmstatuswortes, dessen äquivalentes Bit 0
-	 * bis 7 eine 1 enthält.
+	 * Lï¿½sche jedes Bit des unteren Programmstatuswortes, dessen ï¿½quivalentes Bit 0
+	 * bis 7 eine 1 enthï¿½lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -928,8 +928,8 @@ public class CPU {
 	/**
 	 * PPSU (Preset Program Status, Upper, Masked)
 	 * 
-	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen äquivalentes
-	 * Bit 0 bis 7 eine 1 enthält.
+	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen ï¿½quivalentes
+	 * Bit 0 bis 7 eine 1 enthï¿½lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -939,10 +939,10 @@ public class CPU {
 	}
 
 	/**
-	 * PPSL (Preset Program· Status, Lower, Masked)
+	 * PPSL (Preset Programï¿½ Status, Lower, Masked)
 	 * 
-	 * Setze jedes Bit des unteren Programmstatuswortes auf 1, dessen äquivalentes
-	 * Bit 0 bis 7 eine 1 enthält.
+	 * Setze jedes Bit des unteren Programmstatuswortes auf 1, dessen ï¿½quivalentes
+	 * Bit 0 bis 7 eine 1 enthï¿½lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1086,9 +1086,10 @@ public class CPU {
 		short i = CPU.getIndirectAddressing(param1);
 		short a = (short) (param1 & 0x7F);
 		int addr = CPU.getPC();
-		if ((a & 0x3F) != 0) {
-			addr += ~(a + 1);
+		if (a>63) {
+			a-=128;
 		}
+		addr+=a;
 		short b = GPU.getByte(addr);
 		if (i == 0x1) {
 			short b1 = GPU.getByte(addr + 1);
@@ -1096,24 +1097,13 @@ public class CPU {
 			b = GPU.getByte(addr);
 		}
 		short rvalue = CPU.getRegister(rx);
-		short result = (short) (rvalue + b);
+		short result=(short) ( rvalue+ b);
 		CPU.setRegister(rx, result);
 
-		CPU.setR0((short) (result & 0xFF));
 		CPU.setCarry(result >= 0x100);
 		CPU.setOverflow(result >= 0x100);
 		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
-
-		if (result == 0) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl &= ~(1 << 7);
-		} else if (result > 63) {
-			CPU.psl &= ~(1 << 6);
-			CPU.psl |= 1 << 7;
-		} else {
-			CPU.psl &= ~(1 << 7);
-			CPU.psl |= 1 << 6;
-		}
+		CPU.setCC(result);
 	}
 
 	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
@@ -1630,7 +1620,7 @@ public class CPU {
 
 	// == END SIMULATION METHODS ==
 
-	// Rücksprungadreßspeicher
+	// Rï¿½cksprungadreï¿½speicher
 	// stack
 	private static short[] subroutineStack = new short[8];
 	// private static Stack<Integer> returnAddrStack = new Stack<Integer>();
