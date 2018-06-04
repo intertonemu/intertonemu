@@ -1542,7 +1542,7 @@ public class CPU {
 		short addr_l = CPU.getAddrLower(param2);
 
 		// combine address to full address
-		int addr = CPU.getAddr(addr_u, addr_l);
+		int addr = CPU.getAddr(addr_u, addr_l); 
 		if (i == 0x1) {
 			// indirect addressing
 			// get value at address and save as new address
