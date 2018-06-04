@@ -113,9 +113,11 @@ public class CPU {
 	/**
 	 * return value of register given by i
 	 * 
-	 * @param i to specify the register (valid are values from 0 to 3)
+	 * @param i
+	 *            to specify the register (valid are values from 0 to 3)
 	 * @return the value of the register given by i
-	 * @throws CpuInvalidRegisterException if an invalid i is given
+	 * @throws CpuInvalidRegisterException
+	 *             if an invalid i is given
 	 */
 	public static short getRegister(int i) throws CpuInvalidRegisterException {
 		switch (i) {
@@ -238,9 +240,12 @@ public class CPU {
 	/**
 	 * set the value of the register specified by i to the given value val
 	 * 
-	 * @param i   to specify the register (valid are values from 0 to 3)
-	 * @param val the value which should be set
-	 * @throws CpuInvalidRegisterException if the given i is invalid
+	 * @param i
+	 *            to specify the register (valid are values from 0 to 3)
+	 * @param val
+	 *            the value which should be set
+	 * @throws CpuInvalidRegisterException
+	 *             if the given i is invalid
 	 */
 	private static void setRegister(int i, short val) throws CpuInvalidRegisterException {
 		val = (short) (val & 0xff);
@@ -301,7 +306,8 @@ public class CPU {
 	/**
 	 * returns if the given opcode is invalid for the cpu
 	 * 
-	 * @param opcode the opcode which should be tested
+	 * @param opcode
+	 *            the opcode which should be tested
 	 * @return if the given opcode is invalid
 	 */
 	public static boolean isOpcodeInvalid(short opcode) {
@@ -315,7 +321,8 @@ public class CPU {
 	/**
 	 * returns if the given opcode is valid for the cpu
 	 * 
-	 * @param opcode the opcode which should be tested
+	 * @param opcode
+	 *            the opcode which should be tested
 	 * @return if the given opcode is valid
 	 */
 	public static boolean isOpcodeValid(short opcode) {
@@ -325,7 +332,8 @@ public class CPU {
 	/**
 	 * returns the length of the given opcode
 	 * 
-	 * @param opcode the opcode which length should be returned
+	 * @param opcode
+	 *            the opcode which length should be returned
 	 * @return the length in byte of the given instruction (can only be 1 [byte], 2
 	 *         [byte] or 3 [byte])
 	 */
@@ -576,8 +584,9 @@ public class CPU {
 	 * und 9 auf 1 geseszt sind.
 	 * 
 	 * @param opcode
-	 * @param param1 Untern 7 Bit = Relative Sprung Adresse (range: -63 and +63).
-	 *               Bit 8 = Flag f�r indirekte Adressierung
+	 * @param param1
+	 *            Untern 7 Bit = Relative Sprung Adresse (range: -63 and +63). Bit 8
+	 *            = Flag f�r indirekte Adressierung
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
@@ -987,7 +996,8 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit 0
+	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit
+	 * 0
 	 * 
 	 * 
 	 * @param opcode
@@ -1000,8 +1010,9 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes Bit
-	 * 0 bis 7 eine 1 enth�lt. 
+	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes
+	 * Bit 0 bis 7 eine 1 enth�lt.
+	 * 
 	 * @param opcode
 	 * @param param1
 	 */
@@ -1263,8 +1274,10 @@ public class CPU {
 	 * 17 mit den Statusbit CCO, CC1 nicht uebereinstimmen.
 	 * 
 	 * @param opcode
-	 * @param param1 bit 7: indirekt , bit 6..0: high order
-	 * @param param2 bit 7..0: low order
+	 * @param param1
+	 *            bit 7: indirekt , bit 6..0: high order
+	 * @param param2
+	 *            bit 7..0: low order
 	 */
 	public static void process0x9C_0x9F(short opcode, short param1, short param2) {
 		short opcodeCC = (short) ((opcode & 0x03) & 0xFF);
@@ -1562,8 +1575,30 @@ public class CPU {
 		// not used by PONG
 	}
 
-	public static void process0xE0_0xE3(short opcode) {
-		// TODO Leo
+	// COMZ Compare to Register Zero Arithmetic/Logical
+	public static void process0xE0_0xE3(short opcode) throws CpuInvalidRegisterException {
+		Short rx = CPU.getLast2Bits(opcode);
+		short r0 = CPU.getR0();
+
+		if ((CPU.psl & 0x2) < 1) {
+			// arithmetisch
+			// two's complement
+			if (rx.shortValue() > 63) {
+				rx = (short) (rx.shortValue() - 128);
+				rx = (short) (rx.shortValue() + 1);
+			}
+			if (CPU.getR0() > 63) {
+				r0 -= 128;
+				r0 += 1;
+			}
+			// Compare
+			CPU.setCC((short) rx.compareTo(r0));
+
+		} else if ((CPU.psl & 0x2) > 0) {
+			// logisch
+			// Compare
+			CPU.setCC((short) rx.compareTo(CPU.getR0()));
+		}
 	}
 
 	/**
