@@ -392,7 +392,7 @@ public class CPU {
 			// LODZ r0 (0x00) is illegal opcode
 			throw new CpuInvalidRegisterException();
 		}
-		
+
 		CPU.jumped = false;
 	}
 
@@ -412,7 +412,7 @@ public class CPU {
 		CPU.setRegister(r, result);
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
-		
+
 		CPU.jumped = false;
 	}
 
@@ -446,7 +446,7 @@ public class CPU {
 		CPU.setRegister(r, result);
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
-		
+
 		CPU.jumped = false;
 	}
 
@@ -509,10 +509,10 @@ public class CPU {
 		default:
 			throw new CpuOpcodeInvalidException();
 		}
-		
+
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
-		
+
 		CPU.jumped = false;
 	}
 
@@ -529,10 +529,10 @@ public class CPU {
 		short value = CPU.getPSU();
 		value = (short) (value & ~0x18); // ensure that bit 3 and bit 4 is 0
 		CPU.setR0(value);
-		
+
 		// adjust CC in PSW accordingly
 		CPU.setCC(value);
-		
+
 		CPU.jumped = false;
 	}
 
@@ -546,10 +546,10 @@ public class CPU {
 	public static void process0x13(short opcode) {
 		short value = CPU.getPSL();
 		CPU.setR0(value);
-		
+
 		// adjust CC in PSW accordingly
 		CPU.setCC(value);
-		
+
 		CPU.jumped = false;
 	}
 
@@ -569,12 +569,11 @@ public class CPU {
 		if ((opcode & 0x03) == 3 || ((CPU.getPSL() & 0xC0) >> 6) == (opcode & 0x03)) {
 			CPU.pc = CPU.popStackAddr();
 			CPU.jumped = true;
-		}
-		else {
+		} else {
 			CPU.jumped = false;
 		}
 	}
-	
+
 	/****************************/
 
 	/**
@@ -613,7 +612,7 @@ public class CPU {
 	}
 
 	/**
-	 * BCT (Branch On Condition True Absolute)
+	 * BCTA (Branch On Condition True Absolute)
 	 * 
 	 * Springe an die mit Bit 0 bis 14 definierte Speicheradresse, wenn Bit 16 und
 	 * 17 mitden Statusbit CCO, CC1 übereinstimmen. Springe unbedingt, wenn Bit 8
@@ -708,11 +707,11 @@ public class CPU {
 	}
 
 	public static void process0x30_0x33(short opcode) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0x34_0x37(short opcode) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	/**
@@ -774,7 +773,7 @@ public class CPU {
 	}
 
 	public static void process0x40(short opcode) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	/* ########## 0x40 - 0x4F ########## */
@@ -828,7 +827,7 @@ public class CPU {
 	}
 
 	public static void process0x54_0x57(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	/**
@@ -856,7 +855,7 @@ public class CPU {
 	}
 
 	public static void process0x5C_0x5F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	// IORZ (load logic OR of r and r0 into r0)
@@ -1025,8 +1024,8 @@ public class CPU {
 		short r = CPU.getLast2Bits(opcode);
 		short lvalue = CPU.getR0();
 		short rvalue = CPU.getRegister(r);
-		short result = (short)(lvalue+rvalue);
-		CPU.setR0((short)(result& 0xFF));
+		short result = (short) (lvalue + rvalue);
+		CPU.setR0((short) (result & 0xFF));
 		CPU.setCarry(result >= 0x100);
 		CPU.setOverflow(result >= 0x100);
 		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
@@ -1097,10 +1096,10 @@ public class CPU {
 			b = GPU.getByte(addr);
 		}
 		short rvalue = CPU.getRegister(rx);
-		short result=(short) ( rvalue+ b);
+		short result = (short) (rvalue + b);
 		CPU.setRegister(rx, result);
 
-		CPU.setR0((short)(result& 0xFF));
+		CPU.setR0((short) (result & 0xFF));
 		CPU.setCarry(result >= 0x100);
 		CPU.setOverflow(result >= 0x100);
 		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
@@ -1179,15 +1178,39 @@ public class CPU {
 	}
 
 	public static void process0x9B(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
+	/**
+	 * BCFA (Branch On Condition False Absolute)
+	 * 
+	 * 
+	 * Springe an die mit Bit 0 bis 14 definierte Speicheradresse, wenn Bit 16 und
+	 * 17 mit den Statusbit CCO, CC1 nicht uebereinstimmen.
+	 * 
+	 * @param opcode
+	 * @param param1
+	 *            high order
+	 * @param param2
+	 *            low order
+	 */
 	public static void process0x9C_0x9F(short opcode, short param1, short param2) {
-		// TODO Tim 
+		short opcodeCC = (short) ((opcode & 0x03) & 0xFF);
+		short cc = (short) (getCC() & 0xFF);
+		if (cc != opcodeCC) {
+			// direkte addressierung
+			if (!((param1 & 0x80) == 0x80)) {
+				CPU.pc = (short) (((param1 & 0x7F) << 8) | (param2 & 0xFF));
+			} else {
+				// indirekte Adressierung
+				CPU.pc = (short) GPU.getByte((short) (((param1 & 0x7F) << 8) | (param2 & 0xFF)));
+			}
+			CPU.jumped = true;
+		}
 	}
 
 	public static void process0x9F(short opcode, short param1, short param2) {
-		//not used by PONG 
+		// not used by PONG
 	}
 
 	/* ####### 0xA0 - 0xAF ######## */
@@ -1238,7 +1261,7 @@ public class CPU {
 	}
 
 	public static void process0xB0_0xB3(short opcode) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	/**
@@ -1310,7 +1333,7 @@ public class CPU {
 	}
 
 	public static void process0xBB(short opcode, short param1) throws CpuInvalidRegisterException {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xBC_0xBF(short opcode) {
@@ -1318,7 +1341,7 @@ public class CPU {
 	}
 
 	public static void process0xBF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	// NOP
@@ -1389,23 +1412,23 @@ public class CPU {
 	}
 
 	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
-		// TODO Tiglat 
+		// TODO Tiglat
 	}
 
 	public static void process0xD4_0xD7(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xD8_0xDB(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xDC_0xDF(short opcode, short param1, short param2) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xE0_0xE3(short opcode) {
-		// TODO Leo 
+		// TODO Leo
 	}
 
 	/**
@@ -1458,7 +1481,7 @@ public class CPU {
 	}
 
 	public static void process0xE8_0xEB(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xEC_0xEF(short opcode, short param1, short param2) {
@@ -1466,11 +1489,11 @@ public class CPU {
 	}
 
 	public static void process0xF0_0xF3(short opcode) throws CpuInvalidRegisterException {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	public static void process0xF4_0xF7(short opcode, short param1) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	// BDRR
@@ -1497,7 +1520,7 @@ public class CPU {
 	}
 
 	public static void process0xFC_0xFF(short opcode, short param1, short param2) {
-		//not used by PONG
+		// not used by PONG
 	}
 
 	// == END OPCODE METHODS ==
