@@ -1503,8 +1503,67 @@ public class CPU {
 		//not used by PONG
 	}
 
+	/**
+	 * COMA
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @param param2
+	 */
 	public static void process0xEC_0xEF(short opcode, short param1, short param2) {
-		// TODO
+		// get target register or index register
+			short rx = CPU.getLast2Bits(opcode);
+			// get if indirect addressing is used
+			short i = CPU.getIndirectAddressing(param1);
+			// get index control
+			short ic = CPU.getIndexControl(param1);
+			// get upper address part
+			short addr_u = CPU.getAddrUpper(param1);
+			// get lower address part
+			short addr_l = CPU.getAddrLower(param2);
+
+			// combine address to full address
+			int addr = CPU.getAddr(addr_u, addr_l);
+			if (i == 0x1) {
+				// indirect addressing
+				// get value at address and save as new address
+				addr_u = GPU.getByte(addr);
+				addr_l = GPU.getByte(addr + 1);
+				addr = CPU.getAddr(addr_u, addr_l);
+			}
+
+			short result = 0;
+			switch (ic) {
+			case 0:
+				// non-indexed
+				result = GPU.getByte(addr);
+				CPU.setRegister(rx, result);
+				break;
+			case 1:
+				// indexed increment
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+				result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+				CPU.setRegister(0, result);
+				break;
+			case 2:
+				// indexed decrement
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
+				result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+				CPU.setRegister(0, result);
+				break;
+			case 3:
+				// just indexed
+				result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+				CPU.setRegister(0, result);
+				break;
+			default:
+				throw new CpuOpcodeInvalidException();
+			}
+			
+			// adjust CC in PSW accordingly
+			CPU.setCC(result);
+			
+			CPU.jumped = false;
 	}
 
 	public static void process0xF0_0xF3(short opcode) throws CpuInvalidRegisterException {
