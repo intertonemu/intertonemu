@@ -1706,7 +1706,7 @@ public class CPU {
 
 	public static void process0xDC_0xDF(short opcode, short param1, short param2) {
 		// not used by PONG
-	}
+	} 
 
 	// COMZ Compare to Register Zero Arithmetic/Logical
 	public static void process0xE0_0xE3(short opcode)
