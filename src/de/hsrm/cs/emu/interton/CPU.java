@@ -1156,7 +1156,7 @@ public class CPU {
 		CPU.setCC(result);
 	}
 
-	
+	// 
 	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
 		// TODO Tiglat
 	
