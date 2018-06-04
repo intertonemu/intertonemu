@@ -742,7 +742,8 @@ public class CPU {
 	}
 
 	// EORA
-	public static void process0x2C_0x2F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+	public static void process0x2C_0x2F(short opcode, short param1, short param2)
+			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
 		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getIndirectAddressing(param1);
 		short ist = CPU.getIndexControl(param1);
@@ -757,26 +758,32 @@ public class CPU {
 			addr_l = GPU.getByte(addr + 1);
 			addr = CPU.getAddr(addr_u, addr_l);
 		}
+		short result = 0;
 		switch (ist) {
 		case 0:
 			// non-indexed
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) ^ GPU.getByte(addr)));
+			result = GPU.getByte(addr);
+			CPU.setRegister(rx, (short) (result ^ CPU.getRegister(rx)));
 			break;
 		case 1:
 			// indexed increment
-			CPU.r1++;
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) ^ GPU.getByte(addr + CPU.r1)));
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result ^ CPU.getRegister(rx)));
 			break;
 		case 2:
 			// indexed decrement
-			CPU.r1--;
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) ^ GPU.getByte(addr + CPU.r1)));
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result ^ CPU.getRegister(rx)));
 			break;
 		case 3:
 			// just indexed
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) ^ GPU.getByte(addr + CPU.r1)));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result ^ CPU.getRegister(rx)));
 			break;
 		default:
+			throw new CpuOpcodeInvalidException();
 		}
 	}
 
@@ -898,8 +905,53 @@ public class CPU {
 
 	}
 
-	public static void process0x50_0x53(short opcode) {
-		// TODO Semih
+	public static void process0x50_0x53(short opcode) throws CpuInvalidRegisterException {
+
+		short r = CPU.getLast2Bits(opcode);
+		short result = CPU.getRegister(r);
+		short bit_zero = (short) (result & 0x01);
+		short bit_six = (short) (result & 0x40);
+
+		result = (short) (result >> 1);
+
+		if (!(CPU.isWcSet())) {
+			if (bit_zero == 1) {
+				result = (short) (result | 0x80);
+			}
+			if (bit_zero == 0) {
+				result = (short) (result & 0x7F);
+			}
+		}
+
+		if (CPU.isWcSet()) {
+			if (isCSet()) {
+				result = (short) (result | 0x80);
+			}
+			if (!isCSet()) {
+				result = (short) (result & 0x7F);
+			}
+			if (bit_zero == 1) {
+				CPU.setCarry(true);
+				result = (short) (result | 0x80);
+			}
+			if (bit_zero == 0) {
+				CPU.setCarry(false);
+			}
+			if (bit_six == 1) {
+				CPU.setInterDigitCarry(true);
+			}
+			if (bit_six == 0) {
+				CPU.setInterDigitCarry(false);
+			}
+
+		}
+
+		short new_last_bit = (short) (result & 0x80);
+
+		if (new_last_bit != bit_zero) {
+			CPU.setOverflow(true);
+		}
+		CPU.setRegister(r, result);
 	}
 
 	public static void process0x54_0x57(short opcode, short param1) {
@@ -957,7 +1009,8 @@ public class CPU {
 	}
 
 	// IORA
-	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+	public static void process0x6C_0x6F(short opcode, short param1, short param2)
+			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
 		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getIndirectAddressing(param1);
 		short ist = CPU.getIndexControl(param1);
@@ -972,25 +1025,32 @@ public class CPU {
 			addr_l = GPU.getByte(addr + 1);
 			addr = CPU.getAddr(addr_u, addr_l);
 		}
+		short result = 0;
 		switch (ist) {
 		case 0:
 			// non-indexed
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr)));
+			result = GPU.getByte(addr);
+			CPU.setRegister(rx, (short) (result | CPU.getRegister(rx)));
 			break;
 		case 1:
 			// indexed increment
-			CPU.r1++;
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result | CPU.getRegister(rx)));
 			break;
 		case 2:
 			// indexed decrement
-			CPU.r1--;
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result | CPU.getRegister(rx)));
 			break;
 		case 3:
 			// just indexed
-			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			CPU.setRegister(0, (short) (result | CPU.getRegister(rx)));
 			break;
+		default:
+			throw new CpuOpcodeInvalidException();
 		}
 
 	}
@@ -1010,7 +1070,7 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit
+	 * Loesche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit
 	 * 0 bis 7 eine 1 enth�lt.
 	 * 
 	 * @param opcode
@@ -1023,8 +1083,8 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes
-	 * Bit 0 bis 7 eine 1 enth�lt.
+	 * Loesche jedes Bit des unteren Programmstatuswortes, dessen quivalentes Bit 0
+	 * bis 7 eine 1 enthlt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1036,8 +1096,8 @@ public class CPU {
 	/**
 	 * PPSU (Preset Program Status, Upper, Masked)
 	 * 
-	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen �quivalentes
-	 * Bit 0 bis 7 eine 1 enth�lt.
+	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen quivalentes Bit
+	 * 0 bis 7 eine 1 enthlt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1047,7 +1107,7 @@ public class CPU {
 	}
 
 	/**
-	 * PPSL (Preset Program� Status, Lower, Masked)
+	 * PPSL (Preset Program Status, Lower, Masked)
 	 * 
 	 * Setze jedes Bit des unteren Programmstatuswortes auf 1, dessen �quivalentes
 	 * Bit 0 bis 7 eine 1 enth�lt.
@@ -1216,8 +1276,70 @@ public class CPU {
 		CPU.setCC(result);
 	}
 
+	//
+	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
+
+		short bit0_1 = (short) (opcode & 0x03);
+		short result = CPU.getRegister((int) bit0_1);
+		short first_bit = (short) (result & 0x01);
+		short last_bit = (short) (result & 0x8000);
+		short idc_x = (short) (result & 0x0100);
+		if (isWcSet()) {
+
+			if (idc_x == 0) {
+				CPU.setInterDigitCarry(false);
+			} else {
+				CPU.setInterDigitCarry(true);
+			}
+
+			if (last_bit == 0) {
+				result = (short) (result << 1);
+				CPU.setCarry(false);
+				if (CPU.isCSet()) {
+					result = (short) (result | 0x01);
+				} else {
+				}
+			} else {
+				result = (short) (result << 1);
+				CPU.setCarry(true);
+				if (CPU.isCSet()) {
+					result = (short) (result | 0x01);
+				} else {
+				}
+			}
+		} else {
+			if (last_bit == 0) {
+				result = (short) (result << 1);
+			} else {
+				result = (short) (result << 1);
+				result = (short) (result | 0x01);
+			}
+		}
+		short new_first_bit = (short) (result & 0x01);
+		if (new_first_bit != first_bit) {
+			CPU.setOverflow(true);
+		}
+
+		CPU.setRegister(bit0_1, result);
+
+	}
+
+	// ADDA
 	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
-		// TODO Soner
+		short i = CPU.getIndirectAddressing(param1);
+		short ic = CPU.getIndexControl(param1);
+		short alow = param2;
+		short ahigh = CPU.getAddrUpper(param1);
+
+		int addr = CPU.getAddr(ahigh, alow);
+		short b = GPU.getByte(addr);
+
+		short bit0_12 = (short) (opcode & 0x1FFF);
+		short rx = CPU.getLast2Bits(opcode);
+		if (isWcSet()) {
+			rx = (short) (rx + bit0_12);
+			CPU.setR0(rx);
+		}
 	}
 
 	// opcode 0x90 and 0x91 are invalid
@@ -1515,7 +1637,6 @@ public class CPU {
 	 */
 	public static void process0xC8_0xCB(short opcode, short param1) throws CpuInvalidRegisterException {
 		short rx = CPU.getLast2Bits(opcode);
-		short i = CPU.getIndirectAddressing(param1);
 
 		boolean indirekt = (param1 & 0x80) == 0x80;
 		param1 = (short) (param1 & 0x7F);
@@ -1575,10 +1696,6 @@ public class CPU {
 		}
 	}
 
-	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
-		// TODO Tiglat
-	}
-
 	public static void process0xD4_0xD7(short opcode, short param1) {
 		// not used by PONG
 	}
@@ -1591,8 +1708,25 @@ public class CPU {
 		// not used by PONG
 	}
 
-	public static void process0xE0_0xE3(short opcode) {
-		// TODO Leo
+	// COMZ Compare to Register Zero Arithmetic/Logical
+	public static void process0xE0_0xE3(short opcode)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
+		short rx = CPU.getLast2Bits(opcode);
+		short com = (short) (CPU.psl & 0x2);
+
+		// vergleicht logisch oder arithmetisch je nach com
+		CPU.setCC(rx, CPU.getR0(), com);
+
+		/*
+		 * if ((CPU.psl & 0x2) < 1) { // arithmetisch // two's complement if
+		 * (rx.shortValue() > 63) { rx = (short) (rx.shortValue() - 128); rx = (short)
+		 * (rx.shortValue() + 1); } if (CPU.getR0() > 63) { r0 -= 128; r0 += 1; } //
+		 * Compare CPU.setCC(rx, CPU.getR0());
+		 * 
+		 * } else if ((CPU.psl & 0x2) > 0) { // logisch // Compare CPU.setCC(rx,
+		 * CPU.getR0()); }
+		 * 
+		 */
 	}
 
 	/**
@@ -2112,6 +2246,12 @@ public class CPU {
 		System.out.printf("R2: %02X ", CPU.getR2());
 		System.out.printf("R3: %02X ", CPU.getR3());
 		System.out.printf("PSL: %02X ", CPU.getPSL());
+		System.out.printf("$1FC6: %02X ", GPU.getByte(0x1FC6));
+		System.out.printf("$1F00: %02X ", GPU.getByte(0x1F00));
+		System.out.printf("$1F01: %02X ", GPU.getByte(0x1F01));
+		System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
+		System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
+		System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
 		System.out.print("\n");
 	}
 
