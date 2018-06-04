@@ -623,15 +623,14 @@ public class CPU {
 	 * @param param2
 	 */
 	public static void process0x1C_0x1F(short opcode, short param1, short param2) {
-		short opcodeConditionCode = (short) (opcode & 0x03);
-		short programmstatusConditionCode = (short) ((CPU.getPSU() & 0xC0) >> 6);
-		if (opcodeConditionCode == 3 || programmstatusConditionCode == opcodeConditionCode) {
-			boolean indirekt = (param1 & 0x80) == 0x80;
-			if (!indirekt) {
-				CPU.pc = (short) ((param1 << 8) | (param2 & 0xFF));
+		short opcodeCC = (short) ((opcode & 0x03) & 0xFF);
+		short cc = (short) (getCC() & 0xFF);
+		if (opcodeCC == 3 || cc == opcodeCC) {
+			if (!((param1 & 0x80) == 0x80)) { // TODO: methode check indirekt addressing bit -> CPU.isIndirekt(param1)
+				CPU.pc = (short) (((param1 & 0x7F) << 8) | (param2 & 0xFF));
 			} else {
 				// indirekte Adressierung
-				CPU.pc = (short) ((GPU.getByte(param1) << 8) | (GPU.getByte(param1 + 1) & 0xFF));
+				CPU.pc = (short) GPU.getByte((short) (((param1 & 0x7F) << 8) | (param2 & 0xFF)));
 			}
 			CPU.jumped = true;
 		}
@@ -1190,16 +1189,16 @@ public class CPU {
 	 * 
 	 * @param opcode
 	 * @param param1
-	 *            high order
+	 *            bit 7: indirekt , bit 6..0: high order
 	 * @param param2
-	 *            low order
+	 *            bit 7..0: low order
 	 */
 	public static void process0x9C_0x9F(short opcode, short param1, short param2) {
 		short opcodeCC = (short) ((opcode & 0x03) & 0xFF);
 		short cc = (short) (getCC() & 0xFF);
 		if (cc != opcodeCC) {
-			// direkte addressierung
-			if (!((param1 & 0x80) == 0x80)) {
+			if (!((param1 & 0x80) == 0x80)) { // TODO: methode check indirekt addressing bit -> CPU.isIndirekt(param1)
+				// direkte addressierung
 				CPU.pc = (short) (((param1 & 0x7F) << 8) | (param2 & 0xFF));
 			} else {
 				// indirekte Adressierung
