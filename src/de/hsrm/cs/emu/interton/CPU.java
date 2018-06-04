@@ -1171,7 +1171,7 @@ public class CPU {
 				CPU.setInterDigitCarry(false);
 			} else {
 				CPU.setInterDigitCarry(true);
-			}
+			} 
 
 			if (last_bit == 0) {
 				result = (short) (result << 1);
