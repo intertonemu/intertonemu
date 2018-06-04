@@ -708,11 +708,11 @@ public class CPU {
 	}
 
 	public static void process0x30_0x33(short opcode) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0x34_0x37(short opcode) {
-		// TODO
+		//not used by PONG
 	}
 
 	/**
@@ -774,7 +774,7 @@ public class CPU {
 	}
 
 	public static void process0x40(short opcode) {
-		// TODO
+		//not used by PONG
 	}
 
 	/* ########## 0x40 - 0x4F ########## */
@@ -828,7 +828,7 @@ public class CPU {
 	}
 
 	public static void process0x54_0x57(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	/**
@@ -856,7 +856,7 @@ public class CPU {
 	}
 
 	public static void process0x5C_0x5F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		// TODO
+		//not used by PONG
 	}
 
 	// IORZ (load logic OR of r and r0 into r0)
@@ -1179,7 +1179,7 @@ public class CPU {
 	}
 
 	public static void process0x9B(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0x9C_0x9F(short opcode, short param1, short param2) {
@@ -1238,7 +1238,7 @@ public class CPU {
 	}
 
 	public static void process0xB0_0xB3(short opcode) {
-		// TODO
+		//not used by PONG
 	}
 
 	/**
@@ -1310,7 +1310,7 @@ public class CPU {
 	}
 
 	public static void process0xBB(short opcode, short param1) throws CpuInvalidRegisterException {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xBC_0xBF(short opcode) {
@@ -1318,7 +1318,7 @@ public class CPU {
 	}
 
 	public static void process0xBF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		// TODO
+		//not used by PONG
 	}
 
 	// NOP
