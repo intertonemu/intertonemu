@@ -746,6 +746,10 @@ public class CPU {
 		short result2 = (short)((lls << 4 )+ rrs);
 		System.out.println(result2);
 		*/
+		short test = 0xC5 ;
+	System.out.println(test);
+	short test2 = 0xC5 & 0x7f;
+	System.out.println(test2);
 		
 		
 		
