@@ -879,7 +879,7 @@ public class CPU {
 		setRegister(r, (short) (r & ((param1 & 0xFFFF00))));
 	}
  
-	// IORA process0x6C_0x6F
+	// IORA
 	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getIndirectAddressing(param1);
