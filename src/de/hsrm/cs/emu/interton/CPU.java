@@ -3,6 +3,7 @@ package de.hsrm.cs.emu.interton;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import de.hsrm.cs.emu.interton.exception.CpuInvalidCompareModeException;
 import de.hsrm.cs.emu.interton.exception.CpuInvalidLengthException;
 import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
@@ -280,23 +281,88 @@ public class CPU {
 		}
 	}
 
-	public static void setCC(short value) {
-		// equal to zero?
-		if (value == 0) {
-			// CC = %00
-			CPU.psl &= ~(1 << 6);
-			CPU.psl &= ~(1 << 7);
-			// negative
-		} else if (0x01 == ((value >> 7) & 0x01)) {
-			// CC = %10
-			CPU.psl &= ~(1 << 6);
-			CPU.psl |= 1 << 7;
-			// positive
+	/**
+	 * Setzt CC in Abhaenigkeit von <code>value</code>. Equvivalent zu
+	 * <cc>CPU.setCC(value, 0, 1)</cc> -> {@link CPU#setCC(short, short, short)}
+	 * 
+	 * @param value
+	 *            Wert,der mit 0 vergleichen wird.
+	 * @throws CpuInvalidCompareModeException
+	 *             <i>kommt nicht vor</i>
+	 */
+	public static void setCC(short value) throws CpuInvalidCompareModeException {
+		CPU.setCC(value, (short) 1);
+	}
+
+	/**
+	 * 
+	 * * Setzt CC in Abhaenigkeit von <code>value</code>. Equvivalent zu
+	 * <cc>CPU.setCC(value, 0, com)</cc> -> {@link CPU#setCC(short, short, short)}
+	 * 
+	 * @param value
+	 *            Wert,der mit 0 vergleichen wird.
+	 * @param com
+	 *            Vergleichs-Modus COM=1 (logical mode) COM=0 (arithmetic mode)
+	 * @throws CpuInvalidCompareModeException
+	 *             <i>kommt nicht vor</i>
+	 */
+	public static void setCC(short value, short com) throws CpuInvalidCompareModeException {
+		CPU.setCC(value, (short) 0, com);
+	}
+
+	/**
+	 * Setzt CC in abhaenigkeit von value und value2 mit dem Modus com
+	 * 
+	 * @param value
+	 *            Wert 1
+	 * @param value2
+	 *            Wert 2
+	 * @param com
+	 *            Vergleichs-Modus COM=1 (logical mode) COM=0 (arithmetic mode)
+	 * @throws CpuInvalidCompareModeException
+	 *             Wenn Vergleichs-Modus keinen gueltigen Wert enthaelt
+	 * 
+	 */
+	public static void setCC(short value, short value2, short com) throws CpuInvalidCompareModeException {
+		if (com == 1) {
+			// equal to zero?
+			if (value == value2) {
+				// CC = %00
+				CPU.psl &= ~(1 << 6);
+				CPU.psl &= ~(1 << 7);
+				// negative
+			} else if (value < value2) {
+				// CC = %10
+				CPU.psl &= ~(1 << 6);
+				CPU.psl |= 1 << 7;
+				// positive
+			} else {
+				// CC = %01
+				CPU.psl |= 1 << 6;
+				CPU.psl &= ~(1 << 7);
+			}
+
+		} else if (com == 0) {
+
+			boolean beideNegativ = (value & 0x80) == 0x80 && (value2 & 0x80) == 0x80;
+			boolean beidePositiv = (value & 0x80) == 0x00 && (value2 & 0x80) == 0x00;
+			if (value == value2) {
+				CPU.psl &= ~(1 << 6);
+				CPU.psl &= ~(1 << 7);
+			} else if ((value & 0x80) < (value2 & 0x80) || beideNegativ && value < value2
+					|| beidePositiv && value2 > value2) {
+				CPU.psl &= ~(1 << 7);
+				CPU.psl |= 1 << 6;
+
+			} else {
+				CPU.psl &= ~(1 << 6);
+				CPU.psl |= 1 << 7;
+			}
+
 		} else {
-			// CC = %01
-			CPU.psl |= 1 << 6;
-			CPU.psl &= ~(1 << 7);
+			throw new CpuInvalidCompareModeException();
 		}
+
 	}
 
 	// == END SETTER ==
@@ -375,8 +441,10 @@ public class CPU {
 	 * 
 	 * @param opcode
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x00_0x03(short opcode) throws CpuInvalidRegisterException {
+	public static void process0x00_0x03(short opcode)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		// get source register
 		short r = CPU.getLast2Bits(opcode);
 
@@ -402,8 +470,10 @@ public class CPU {
 	 * @param opcode
 	 * @param param1
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x04_0x07(short opcode, short param1) throws CpuInvalidRegisterException {
+	public static void process0x04_0x07(short opcode, short param1)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		// get target register
 		short r = CPU.getLast2Bits(opcode);
 		// get byte which should be set
@@ -422,8 +492,10 @@ public class CPU {
 	 * @param opcode
 	 * @param param1
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x08_0x0B(short opcode, short param1) throws CpuInvalidRegisterException {
+	public static void process0x08_0x0B(short opcode, short param1)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		// get target register
 		short r = getLast2Bits(opcode);
 		// check if indirect addressing
@@ -458,9 +530,10 @@ public class CPU {
 	 * @param param2
 	 * @throws CpuInvalidRegisterException
 	 * @throws CpuOpcodeInvalidException
+	 * @throws CpuInvalidCompareModeException
 	 */
 	public static void process0x0C_0x0F(short opcode, short param1, short param2)
-			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
+			throws CpuInvalidRegisterException, CpuOpcodeInvalidException, CpuInvalidCompareModeException {
 		// get target register or index register
 		short rx = CPU.getLast2Bits(opcode);
 		// get if indirect addressing is used
@@ -524,8 +597,9 @@ public class CPU {
 	 * Lade das Register RO mit dem Inhalt des oberen Programmstatus-Registers PSU.
 	 * 
 	 * @param opcode
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x12(short opcode) {
+	public static void process0x12(short opcode) throws CpuInvalidCompareModeException {
 		short value = CPU.getPSU();
 		value = (short) (value & ~0x18); // ensure that bit 3 and bit 4 is 0
 		CPU.setR0(value);
@@ -542,8 +616,9 @@ public class CPU {
 	 * Lade das Register RO mit dem Inhalt des unteren Programmstatus-Registers PSL.
 	 * 
 	 * @param opcode
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x13(short opcode) {
+	public static void process0x13(short opcode) throws CpuInvalidCompareModeException {
 		short value = CPU.getPSL();
 		CPU.setR0(value);
 
@@ -790,8 +865,10 @@ public class CPU {
 	 * @param opcode
 	 * @param param1
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x44_0x47(short opcode, short param1) throws CpuInvalidRegisterException {
+	public static void process0x44_0x47(short opcode, short param1)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		short r = CPU.getLast2Bits(opcode);
 		short v = param1;
 
@@ -878,7 +955,7 @@ public class CPU {
 
 		setRegister(r, (short) (r & ((param1 & 0xFFFF00))));
 	}
- 
+
 	// IORA
 	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		short rx = CPU.getLast2Bits(opcode);
@@ -915,8 +992,7 @@ public class CPU {
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
 			break;
 		}
-		
-		
+
 	}
 
 	/**
@@ -934,8 +1010,8 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit 0
-	 * bis 7 eine 1 enth�lt.
+	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit
+	 * 0 bis 7 eine 1 enth�lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -947,8 +1023,8 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes Bit 0
-	 * bis 7 eine 1 enth�lt.
+	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes
+	 * Bit 0 bis 7 eine 1 enth�lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1112,16 +1188,18 @@ public class CPU {
 	 * @param opcode
 	 * @param param1
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0x88_0x8B(short opcode, short param1) throws CpuInvalidRegisterException {
+	public static void process0x88_0x8B(short opcode, short param1)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		short rx = CPU.getLast2Bits(opcode);
 		short i = CPU.getIndirectAddressing(param1);
 		short a = (short) (param1 & 0x7F);
 		int addr = CPU.getPC();
-		if (a>63) {
-			a-=128;
+		if (a > 63) {
+			a -= 128;
 		}
-		addr+=a;
+		addr += a;
 		short b = GPU.getByte(addr);
 		if (i == 0x1) {
 			short b1 = GPU.getByte(addr + 1);
@@ -1129,7 +1207,7 @@ public class CPU {
 			b = GPU.getByte(addr);
 		}
 		short rvalue = CPU.getRegister(rx);
-		short result=(short) ( rvalue+ b);
+		short result = (short) (rvalue + b);
 		CPU.setRegister(rx, result);
 
 		CPU.setCarry(result >= 0x100);
@@ -1396,16 +1474,17 @@ public class CPU {
 	 * @param param2
 	 * @throws CpuInvalidRegisterException
 	 */
-	public static void process0xBC_0xBF(short opcode, short param1, short param2) throws CpuStackPointerMismatchException {
-		short cond = (short)(CPU.getLast2Bits(opcode)&0x3);
+	public static void process0xBC_0xBF(short opcode, short param1, short param2)
+			throws CpuStackPointerMismatchException {
+		short cond = (short) (CPU.getLast2Bits(opcode) & 0x3);
 		short cc = CPU.getCC();
-		short addr_u = (short)(param1&0x7F);
+		short addr_u = (short) (param1 & 0x7F);
 		short addr_l = CPU.getAddrLower(param2);
 		int addr = CPU.getAddr(addr_u, addr_l).shortValue();
-		if(cond!=cc){
-			short pc = (short)CPU.getPC();
+		if (cond != cc) {
+			short pc = (short) CPU.getPC();
 			CPU.pushStackAddr(pc);
-			CPU.pc=addr;
+			CPU.pc = addr;
 		}
 	}
 
@@ -1522,46 +1601,52 @@ public class CPU {
 	 * @param opcode
 	 * @param v
 	 * @throws CpuInvalidRegisterException
+	 * @throws CpuInvalidCompareModeException
 	 */
-	public static void process0xE4_0xE7(short opcode, short v) throws CpuInvalidRegisterException {
+	public static void process0xE4_0xE7(short opcode, short v)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
 		short r = CPU.getLast2Bits(opcode);
 		short rvalue = CPU.getRegister(r);
-		boolean com = (CPU.getPSL() & 0x2) == 0x2;
+		// boolean com = (CPU.getPSL() & 0x2) == 0x2;
+		short com = (short) (CPU.getPSL() & 0x2);
 
-		if (com) {
+		CPU.setCC(rvalue, v, com);
 
-			if (rvalue == v) {
-				CPU.psl &= ~(1 << 6);
-				CPU.psl &= ~(1 << 7);
-			} else if (rvalue < v) {
-				CPU.psl &= ~(1 << 6);
-				CPU.psl |= 1 << 7;
-			} else {
-				CPU.psl &= ~(1 << 7);
-				CPU.psl |= 1 << 6;
-			}
-
-		} else {
-
-			boolean beideNegativ = (rvalue & 0x80) == 0x80 && (v & 0x80) == 0x80;
-			boolean beidePositiv = (rvalue & 0x80) == 0x00 && (v & 0x80) == 0x00;
-
-			if (rvalue == v) {
-				CPU.psl &= ~(1 << 6);
-				CPU.psl &= ~(1 << 7);
-
-			} else if ((rvalue & 0x80) < (v & 0x80) || beideNegativ && r < v /* dann ist v kleiner r, da negativ */
-					|| beidePositiv && r > v /* dann ist r groesser v */) {
-				// r > v
-				CPU.psl &= ~(1 << 7);
-				CPU.psl |= 1 << 6;
-
-			} else {
-				CPU.psl &= ~(1 << 6);
-				CPU.psl |= 1 << 7;
-			}
-
-		}
+		// if (com) {
+		//
+		// if (rvalue == v) {
+		// CPU.psl &= ~(1 << 6);
+		// CPU.psl &= ~(1 << 7);
+		// } else if (rvalue < v) {
+		// CPU.psl &= ~(1 << 6);
+		// CPU.psl |= 1 << 7;
+		// } else {
+		// CPU.psl &= ~(1 << 7);
+		// CPU.psl |= 1 << 6;
+		// }
+		//
+		// } else {
+		//
+		// boolean beideNegativ = (rvalue & 0x80) == 0x80 && (v & 0x80) == 0x80;
+		// boolean beidePositiv = (rvalue & 0x80) == 0x00 && (v & 0x80) == 0x00;
+		//
+		// if (rvalue == v) {
+		// CPU.psl &= ~(1 << 6);
+		// CPU.psl &= ~(1 << 7);
+		//
+		// } else if ((rvalue & 0x80) < (v & 0x80) || beideNegativ && r < v /* dann ist
+		// v kleiner r, da negativ */
+		// || beidePositiv && r > v /* dann ist r groesser v */) {
+		// // r > v
+		// CPU.psl &= ~(1 << 7);
+		// CPU.psl |= 1 << 6;
+		//
+		// } else {
+		// CPU.psl &= ~(1 << 6);
+		// CPU.psl |= 1 << 7;
+		// }
+		//
+		// }
 
 	}
 
@@ -1577,9 +1662,10 @@ public class CPU {
 	 * @param param2
 	 * @throws CpuInvalidRegisterException
 	 * @throws CpuOpcodeInvalidException
+	 * @throws CpuInvalidCompareModeException
 	 */
 	public static void process0xEC_0xEF(short opcode, short param1, short param2)
-			throws CpuInvalidRegisterException, CpuOpcodeInvalidException {
+			throws CpuInvalidRegisterException, CpuOpcodeInvalidException, CpuInvalidCompareModeException {
 		// get target register or index register
 		short rx = CPU.getLast2Bits(opcode);
 		// get if indirect addressing is used
@@ -1591,8 +1677,12 @@ public class CPU {
 		// get lower address part
 		short addr_l = CPU.getAddrLower(param2);
 
+		// get Compare Mode; COM=1 (logical mode) COM=0 (arithmetic mode)
+		// boolean com = (CPU.getPSL() & 0x2) == 0x2;
+		short com = (short) (CPU.getPSL() & 0x2);
+
 		// combine address to full address
-		int addr = CPU.getAddr(addr_u, addr_l); 
+		int addr = CPU.getAddr(addr_u, addr_l);
 		if (i == 0x1) {
 			// indirect addressing
 			// get value at address and save as new address
@@ -1606,31 +1696,28 @@ public class CPU {
 		case 0:
 			// non-indexed
 			result = GPU.getByte(addr);
-			CPU.setRegister(rx, result);
+			CPU.setCC(CPU.getRegister(rx), result, com);
 			break;
 		case 1:
 			// indexed increment
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
 			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
-			CPU.setRegister(0, result);
+			CPU.setCC(CPU.getR0(), result, com);
 			break;
 		case 2:
 			// indexed decrement
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
 			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
-			CPU.setRegister(0, result);
+			CPU.setCC(CPU.getR0(), result, com);
 			break;
 		case 3:
 			// just indexed
 			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
-			CPU.setRegister(0, result);
+			CPU.setCC(CPU.getR0(), result, com);
 			break;
 		default:
 			throw new CpuOpcodeInvalidException();
 		}
-
-		// adjust CC in PSW accordingly
-		CPU.setCC(result);
 
 		CPU.jumped = false;
 	}
