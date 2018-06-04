@@ -879,6 +879,7 @@ public class CPU {
 	public static void process0x54_0x57(short opcode, short param1) {
 		//not used by PONG
 	}
+	
 
 	/**
 	 * BRNR
@@ -1692,9 +1693,30 @@ public class CPU {
 			System.exit(1);
 		}
 	}
+<<<<<<< HEAD
 
 	// return the r/x value of the opcode
 	public static short getLast2Bits(short opcode) {
+=======
+	
+	// check if the Register-Select-Bit in PSL is set
+	public static boolean isRsSet() {
+		return 0x1 == ((CPU.getPSL() >> 4) & 0x1);
+	}
+	// check if the Carry-Bit in PSL is set
+	public static boolean isCSet() {
+		return 0x1 == (CPU.getPSL() & 0x1);
+	}
+	
+	// check if the Interdigit Carry in PSL is set
+	public static boolean isIdcSet() {
+		return 0x1 == ((CPU.getPSL() >> 5) & 0x1);
+	}
+	
+	
+	
+	public static short getRX(short opcode) {
+>>>>>>> branch 'Semih' of https://github.com/intertonemu/intertonemu.git
 		short rx = (short) (opcode & 0x3);
 		return (short) (rx + ((isRsSet() && rx != 0) ? 3 : 0));
 	}
@@ -1759,6 +1781,7 @@ public class CPU {
 		} else
 			throw new CpuStackPointerMismatchException();
 	}
+<<<<<<< HEAD
 
 	/**
 	 * @param pc
@@ -1772,8 +1795,255 @@ public class CPU {
 			CPU.setPSU((short) (CPU.getPSU() + 1));
 		} else
 			throw new CpuStackPointerMismatchException();
+=======
+	
+		
+	
+	// STRA
+	public static void process0xCC_0xCF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+		// see page 23 in Bernstein et al
+		short rx = CPU.getRX(opcode);
+		short i = CPU.getI(param1);
+		short ist = CPU.getIST(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
+		
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if(i==0x1) {
+			//indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr+1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		
+		switch(ist) {
+			case 0:
+				// non-indexed
+				GPU.setByte(addr, CPU.getRegister(rx));
+				break;
+			case 1:
+				// indexed increment
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx)+1));
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
+				break;
+			case 2:
+				// indexed decrement
+				CPU.setRegister(rx, (short) (CPU.getRegister(rx)-1));
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
+				break;
+			case 3:
+				// just indexed
+				GPU.setByte(addr+CPU.getRegister(rx), CPU.getRegister(0));
+				break;
+			default:
+				// TODO error
+		}
+>>>>>>> branch 'Semih' of https://github.com/intertonemu/intertonemu.git
 	}
+<<<<<<< HEAD
 
+=======
+	
+	//REDC 
+	public static void process0x30_0x33(short opcode) {
+		
+	}
+	
+	//RETC eq
+	public static void process0x34(short opcode) {
+		
+	}
+	
+	//RETC gt
+	public static void process0x35(short opcode) {
+			
+	}
+	
+	//RETC lt
+	public static void process0x36(short opcode) {
+			
+	}
+	
+	//RETC un
+	public static void process0x37(short opcode) {
+			
+	}
+	//BSTR eq
+	public static void process0x38(short opcode, short param1) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r))) {
+			CPU.pc = getPC() +2;
+			}
+		
+	}
+	//BSTR gt
+	public static void process0x39(short opcode, short param1) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) || ((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +2;
+			}
+			
+		
+	}
+	//BSTR lt	
+	public static void process0x3A(short opcode, short param1) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +2;
+			}	
+	}	
+	//BSTR un	
+	public static void process0x3B(short opcode, short param1) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +2;
+			}	
+	}
+	
+	//BSTA eq	
+	public static void process0x3C(short opcode, short param1, short param2) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +3;
+			}
+		
+	}
+	
+	//BSTA gt	
+	public static void process0x3D(short opcode, short param1, short param2) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +3;
+			}
+	}
+	
+	//BSTA lt	
+	public static void process0x3E(short opcode, short param1, short param2) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r)) ) {
+			CPU.pc = getPC() +3;
+			}
+	}
+	
+	//BSTA un	
+	public static void process0x3F(short opcode, short param1, short param2) {
+		short r = CPU.getRX(opcode);
+		short CC = (short) (CPU.getPSL() >> 6);
+		if ((r == 0x03) ||((r != 0x03) && (CC != r))  ) {
+			CPU.pc = getPC() +3;
+			}
+
+
+		
+	}
+		
+	
+	
+	
+	
+	
+	//illegal Argument
+	public static void process0x90(short opcode) {
+			// done
+	}
+		
+	//illegal Argument
+	public static void process0x91(short opcode) {
+				// done
+	}
+	
+	
+	//LPSU --Lade PSU  mit inhalt von RO
+	public static void process0x92(short opcode) {
+	CPU.psu = CPU.getR0();
+	}
+	
+	//LPSL ----Lade PSl mit inhalt von RO
+	public static void process0x93(short opcode) {
+	CPU.psl = CPU.getR0();					// done
+	}
+	
+	
+	//DAR --- 
+	public static void process0x94_0x97(short opcode) throws CpuInvalidRegisterException {
+	short r = CPU.getRX(opcode);
+	short result = CPU.getRegister(r);
+	short leftSide = (short) (result >> 4); 
+	short rightSide = (short) (result & 0xF);
+	short zweierKomplement = (short) (((~leftSide ) & 0xF) +1); //zweierKomplement bestimmen zur Berechnung
+	
+	if (!isCSet() && !isIdcSet()) {//wenn Carrybit und IDC nicht gesetzt sind
+		leftSide = (short) (leftSide - zweierKomplement);
+		rightSide= (short) (rightSide - zweierKomplement);
+		result =  (short)(leftSide << 4 + rightSide);
+		}
+	else if (!isCSet() && isIdcSet()) {
+		leftSide = (short) (leftSide - zweierKomplement);
+		result =  (short)(leftSide << 4 + rightSide);
+		}
+	else if (isCSet() && !isIdcSet()) {
+		rightSide = (short) (rightSide - zweierKomplement);
+		result =  (short)(leftSide << 4 + rightSide);
+		}
+	CPU.setRegister(r, result);
+	
+	}
+	
+	//BCFR eq
+	public static void process0x98(short opcode, short param1) {
+		// done
+	}
+	
+	//BCFR gt
+	public static void process0x99(short opcode, short param1) {
+		// done
+	}
+	
+	//BCFR lt
+	public static void process0x9A(short opcode, short param1) {
+			// done
+	}
+	
+	//ZBRR 
+	public static void process0x9B(short opcode, short param1) {
+				// done
+	}
+	
+	//BCFA eq
+	public static void process0x9C(short opcode, short param1, short param2) {
+		// done
+	}
+	
+	//BCFA gt
+	public static void process0x9D(short opcode, short param1, short param2) {
+		// done
+	}
+	
+	//BCFA lt
+	public static void process0x9E(short opcode, short param1, short param2) {
+		// done
+	}
+	
+	//BXA r3
+	public static void process0x9F(short opcode, short param1, short param2) {
+		// done
+	}
+		
+	
+	
+	
+	
+	/************************/
+	
+>>>>>>> branch 'Semih' of https://github.com/intertonemu/intertonemu.git
 	// reset the cpu
 	public static void reset() {
 		CPU.pc = 0;
@@ -1822,13 +2092,19 @@ public class CPU {
 	// get register 0
 	public static short getR0() {
 		return CPU.r0;
+	
 	}
 
 	// get register 1
 	public static short getR1() {
 		return CPU.r1;
+<<<<<<< HEAD
 	}
 
+=======
+	} 
+	
+>>>>>>> branch 'Semih' of https://github.com/intertonemu/intertonemu.git
 	// get register 2
 	public static short getR2() {
 		return CPU.r2;
@@ -1906,5 +2182,38 @@ public class CPU {
 		System.out.printf("PSL: %02X ", CPU.getPSL());
 		System.out.print("\n");
 	}
+<<<<<<< HEAD
 
+=======
+	
+	public static void main(String[] args) {
+		/*short test = 0xff >> 6;
+		System.out.println(test);
+		/*
+		short r0 = 0xA4;
+		System.out.println("0xA4 "+r0);
+		short ls = (short) (r0 >> 4);
+		System.out.println(ls);
+		short rs = (short) (r0 & 0xF);
+		System.out.println(rs);
+		short ZweierK =(short) (((~ls) & 0xF) +1) ;
+		System.out.println(ZweierK );
+		short lls=  (short) (ls - ZweierK);
+		short rrs=  (short)	(rs - ZweierK);
+		System.out.println(lls );
+		System.out.println(rrs );
+		
+		short result2 = (short)((lls << 4 )+ rrs);
+		System.out.println(result2);
+		*/
+		short test = 0xC5 ;
+	System.out.println(test);
+	short test2 = 0xC5 & 0x7f;
+	System.out.println(test2);
+		
+		
+		
+	}
+	
+>>>>>>> branch 'Semih' of https://github.com/intertonemu/intertonemu.git
 }

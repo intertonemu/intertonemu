@@ -97,10 +97,243 @@ public class CPUTests {
 		assertEquals(r1_old, r1_new);
 	}
 	
+	
+	
+	//halt
 	@Test
-	public void testOpcode0xCE() {
+	public void testOpcode0x40() {
+		int pc_old = CPU.getPC();
+		CPU.process1((short)0x40);
+		int pc_new = CPU.getPC();
+		
+		assertEquals(pc_old+1, pc_new);
 		
 	}
+	//r0 = r0 & r1;
+	public void testOpcode0x41() {
+		short r1_old = CPU.getR1();
+		short r0_old = (short) (CPU.getR0() & r1_old) ;
+		
+		CPU.process1((short)0x41);
+		short r0_new = CPU.getR0();
+		short r1_new = CPU.getR1();
+		
+		assertEquals(r1_old, r1_new);
+		assertEquals(r0_old, r0_new);
+		
+	}
+	
+	public void testOpcode0x42() {
+		short r2_old = CPU.getR2();
+		short r0_old = (short) (CPU.getR0() & r2_old) ;
+		
+		CPU.process1((short)0x42);
+		short r0_new = CPU.getR0();
+		short r2_new = CPU.getR2();
+		
+		assertEquals(r2_old, r2_new);
+		assertEquals(r0_old, r0_new);
+		
+	}
+	
+	public void testOpcode0x43() {
+		short r3_old = CPU.getR3();
+		short r0_old = (short) (CPU.getR0() & r3_old) ;
+		
+		CPU.process1((short)0x43);
+		short r0_new = CPU.getR0();
+		short r3_new = CPU.getR3();
+		
+		assertEquals(r3_old, r3_new);
+		assertEquals(r0_old, r0_new);
+		
+	}
+	
+	public void testOpcode0x44() {
+		
+		short param1 = 0x03;
+		short r0_old = (short) (CPU.getR0() & param1);
+		CPU.process2((short)0x44, param1);
+		short r0_new = CPU.getR0();
+		
+		assertEquals(r0_old,r0_new);
+		
+		
+		
+		
+	}
+	
+	public void testOpcode0x45() {
+		
+		short param1 = 0x03;
+		short r1_old = (short) (CPU.getR1() & param1);
+		CPU.process2((short)0x45, param1);
+		short r1_new = CPU.getR1();
+		
+		assertEquals(r1_old,r1_new);
+		
+		
+		
+		
+	}
+	
+	public void testOpcode0x46() {
+		
+		short param1 = 0x03;
+		short r2_old = (short) (CPU.getR2() & param1);
+		CPU.process2((short)0x46, param1);
+		short r2_new = CPU.getR2();
+		
+		assertEquals(r2_old,r2_new);
+		
+	}
+	
+	public void testOpcode0x47() {
+		
+		short param1 = 0x03;
+		short r3_old = (short) (CPU.getR3() & param1);
+		CPU.process2((short)0x47, param1);
+		short r3_new = CPU.getR3();
+		
+		assertEquals(r3_old,r3_new);
+		
+		
+		}
+		public void testOpcode0x48() {
+		
+		short param1 = 0x03;
+		short r0_old = (short) (CPU.getR1() & (param1 & 0x7f));
+		CPU.process2((short)0x49, param1);
+		short r0_new = CPU.getR1();
+		
+		assertEquals(r0_old,r0_new);
+		
+		
+		}
+	
+		public void testOpcode0x49() {
+		
+		short param1 = 0x03;
+		short r1_old = (short) (CPU.getR1() & (param1 & 0x7f));
+		CPU.process2((short)0x49, param1);
+		short r1_new = CPU.getR1();
+		
+		assertEquals(r1_old,r1_new);
+		
+		
+		}
+		
+		public void testOpcode0x4A() {
+			
+		short param1 = 0x03;
+		short r2_old = (short) (CPU.getR2() & (param1 & 0x7f));
+		CPU.process2((short)0x50, param1);
+		short r2_new = CPU.getR2();
+			
+		assertEquals(r2_old,r2_new);
+			
+			
+		}
+		
+		public void testOpcode0x4B() {
+			
+		short param1 = 0x03;
+		short r3_old = (short) (CPU.getR2() & (param1 & 0x7f));
+		CPU.process2((short)0x50, param1);
+		short r3_new = CPU.getR3();
+			
+		assertEquals(r3_old,r3_new);
+			
+				
+			}
+		
+		
+		public void testOpcode0xA0() {
+			
+		short old_r0 = (short) (CPU.getR0() - 0);
+		CPU.process1((short) 0xA0);
+		short r0_new = CPU.getR0();
+		assertEquals(old_r0,r0_new);
+		
+		
+		}
+		
+		public void testOpcode0xA1() {
+			
+			short old_r0 = (short) (CPU.getR0() - CPU.getR1());
+			CPU.process1((short) 0xA1);
+			short r0_new = CPU.getR0();
+			assertEquals(old_r0,r0_new);
+			
+			
+			}
+		
+		public void testOpcode0xA2() {
+			
+			short old_r0 = (short) (CPU.getR0() - CPU.getR2());
+			CPU.process1((short) 0xA2);
+			short r0_new = CPU.getR0();
+			assertEquals(old_r0,r0_new);
+			
+			
+			}
+		
+		public void testOpcode0xA3() {
+			
+			short old_r0 = (short) (CPU.getR0() - CPU.getR3());
+			CPU.process1((short) 0xA3);
+			short r0_new = CPU.getR0();
+			assertEquals(old_r0,r0_new);
+			
+			
+			}
+		
+		public void testOpcode0xA4() {
+			short param1 = 0x04;
+			short old_r0 = (short) (CPU.getR0() - param1);
+			CPU.process2((short) 0xA4,param1);
+			short r0_new = CPU.getR0();
+			assertEquals(old_r0,r0_new);
+			
+			
+			}
+		public void testOpcode0xA5() {
+			short param1 = 0x04;
+			short old_r1 = (short) (CPU.getR1() - param1);
+			CPU.process2((short) 0xA5,param1);
+			short r1_new = CPU.getR1();
+			assertEquals(old_r1,r1_new);
+			
+			
+			}
+		public void testOpcode0xA6() {
+			short param1 = 0x04;
+			short old_r2 = (short) (CPU.getR2() - param1);
+			CPU.process2((short) 0xA6,param1);
+			short r2_new = CPU.getR2();
+			assertEquals(old_r2,r2_new);
+			
+			
+			}
+		
+		public void testOpcode0xA7() {
+			short param1 = 0x04;
+			short old_r3 = (short) (CPU.getR3() - param1);
+			CPU.process2((short) 0xA7, param1);
+			short r3_new = CPU.getR3();
+			assertEquals(old_r3,r3_new);
+			
+			
+			}
+		
+		
+		
+		
+		
+
+
+
+	
 	
 	@Test
 	public void testOpcode0xCF() {
