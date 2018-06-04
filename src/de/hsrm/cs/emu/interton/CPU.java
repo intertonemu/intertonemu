@@ -1404,9 +1404,31 @@ public class CPU {
 		//not used by PONG
 	}
 
-	public static void process0xE0_0xE3(short opcode) {
-		// TODO Leo 
-	}
+	//COMZ Compare to Register Zero	Arithmetic/Logical
+		public static void process0xE0_0xE3(short opcode) throws CpuInvalidRegisterException {
+			Short rx = CPU.getLast2Bits(opcode);
+			short r0 = CPU.getR0();
+			
+			if((CPU.psl & 0x2) < 1) {
+				//arithmetisch
+				//two's complement
+				if(rx.shortValue() > 63) {
+					rx = (short) (rx.shortValue()-128);
+					rx = (short) (rx.shortValue()+1);
+				}
+				if(CPU.getR0() > 63) {
+					r0 -= 128;
+					r0 += 1;
+				}
+				//Compare
+				CPU.setCC((short)rx.compareTo(r0));
+
+			}else if((CPU.psl & 0x2) > 0){
+				//logisch 
+				//Compare
+				CPU.setCC((short)rx.compareTo(CPU.getR0()));
+			}		
+		}
 
 	/**
 	 * COMi
