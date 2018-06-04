@@ -1355,8 +1355,25 @@ public class CPU {
 		// not used by PONG
 	}
 
-	public static void process0xBC_0xBF(short opcode) {
-		// TODO Jann
+	/**
+	 * BSFA
+	 * 
+	 * @param opcode
+	 * @param param1
+	 * @param param2
+	 * @throws CpuInvalidRegisterException
+	 */
+	public static void process0xBC_0xBF(short opcode, short param1, short param2) throws CpuStackPointerMismatchException {
+		short cond = (short)(CPU.getLast2Bits(opcode)&0x3);
+		short cc = CPU.getCC();
+		short addr_u = (short)(param1&0x7F);
+		short addr_l = CPU.getAddrLower(param2);
+		int addr = CPU.getAddr(addr_u, addr_l).shortValue();
+		if(cond!=cc){
+			short pc = (short)CPU.getPC();
+			CPU.pushStackAddr(pc);
+			CPU.pc=addr;
+		}
 	}
 
 	public static void process0xBF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
