@@ -901,8 +901,8 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit 0
-	 * bis 7 eine 1 enth�lt.
+	 * L�sche jedes Bit des oberen Programmstatuswortes, dessen �quivalentes Bit
+	 * 0 bis 7 eine 1 enth�lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -914,8 +914,8 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes Bit 0
-	 * bis 7 eine 1 enth�lt.
+	 * L�sche jedes Bit des unteren Programmstatuswortes, dessen �quivalentes
+	 * Bit 0 bis 7 eine 1 enth�lt.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1085,10 +1085,10 @@ public class CPU {
 		short i = CPU.getIndirectAddressing(param1);
 		short a = (short) (param1 & 0x7F);
 		int addr = CPU.getPC();
-		if (a>63) {
-			a-=128;
+		if (a > 63) {
+			a -= 128;
 		}
-		addr+=a;
+		addr += a;
 		short b = GPU.getByte(addr);
 		if (i == 0x1) {
 			short b1 = GPU.getByte(addr + 1);
@@ -1096,7 +1096,7 @@ public class CPU {
 			b = GPU.getByte(addr);
 		}
 		short rvalue = CPU.getRegister(rx);
-		short result=(short) ( rvalue+ b);
+		short result = (short) (rvalue + b);
 		CPU.setRegister(rx, result);
 
 		CPU.setCarry(result >= 0x100);
@@ -1105,8 +1105,73 @@ public class CPU {
 		CPU.setCC(result);
 	}
 
+	
+	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
+		// TODO Tiglat
+	
+		short bit0_1 = (short) (opcode & 0x03);
+		short result = CPU.getRegister((int) bit0_1);
+		short first_bit = (short) (result & 0x01);
+		short last_bit = (short) (result & 0x8000);
+		short idc_x = (short) (result & 0x0100);
+		if (isWcSet()) {
+
+			if (idc_x == 0) {
+				CPU.setInterDigitCarry(false);
+			} else {
+				CPU.setInterDigitCarry(true);
+			}
+
+			if (last_bit == 0) {
+				result = (short) (result << 1);
+				CPU.setCarry(false);
+				if (CPU.isCSet()) {
+					result = (short) (result | 0x01);
+				} else {
+				}
+			} else {
+				result = (short) (result << 1);
+				CPU.setCarry(true);
+				if (CPU.isCSet()) {
+					result = (short) (result | 0x01);
+				} else {
+				}
+			}
+		} else {
+			if (last_bit == 0) {
+				result = (short) (result << 1);
+			} else {
+				result = (short) (result << 1);
+				result = (short) (result | 0x01);
+			}
+		}
+		short new_first_bit = (short) (result & 0x01);
+		if (new_first_bit != first_bit) {
+			CPU.setOverflow(true);
+		}
+
+		CPU.setRegister(bit0_1, result);
+
+	}
+
+	// ADDA
 	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
 		// TODO Soner
+
+		short i = CPU.getIndirectAddressing(param1);
+		short ic = CPU.getIndexControl(param1);
+		short alow = param2;
+		short ahigh = CPU.getAddrUpper(param1);
+
+		int addr = CPU.getAddr(ahigh, alow);
+		short b = GPU.getByte(addr);
+
+		short bit0_12 = (short) (opcode & 0x1FFF);
+		short rx = CPU.getLast2Bits(opcode);
+		if (isWcSet()) {
+			rx = (short) (rx + bit0_12);
+			CPU.setR0(rx);
+		}
 	}
 
 	// opcode 0x90 and 0x91 are invalid
@@ -1446,9 +1511,7 @@ public class CPU {
 		}
 	}
 
-	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
-		// TODO Tiglat
-	}
+	
 
 	public static void process0xD4_0xD7(short opcode, short param1) {
 		// not used by PONG
@@ -1542,7 +1605,7 @@ public class CPU {
 		short addr_l = CPU.getAddrLower(param2);
 
 		// combine address to full address
-		int addr = CPU.getAddr(addr_u, addr_l); 
+		int addr = CPU.getAddr(addr_u, addr_l);
 		if (i == 0x1) {
 			// indirect addressing
 			// get value at address and save as new address
