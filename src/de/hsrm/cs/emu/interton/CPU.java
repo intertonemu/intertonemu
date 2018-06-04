@@ -392,6 +392,8 @@ public class CPU {
 			// LODZ r0 (0x00) is illegal opcode
 			throw new CpuInvalidRegisterException();
 		}
+		
+		CPU.jumped = false;
 	}
 
 	/**
@@ -410,6 +412,8 @@ public class CPU {
 		CPU.setRegister(r, result);
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
+		
+		CPU.jumped = false;
 	}
 
 	/**
@@ -442,6 +446,8 @@ public class CPU {
 		CPU.setRegister(r, result);
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
+		
+		CPU.jumped = false;
 	}
 
 	/**
@@ -506,6 +512,8 @@ public class CPU {
 		
 		// adjust CC in PSW accordingly
 		CPU.setCC(result);
+		
+		CPU.jumped = false;
 	}
 
 	// opcode 0x10 and opcode 0x11 are invalid
@@ -524,6 +532,8 @@ public class CPU {
 		
 		// adjust CC in PSW accordingly
 		CPU.setCC(value);
+		
+		CPU.jumped = false;
 	}
 
 	/**
@@ -539,13 +549,15 @@ public class CPU {
 		
 		// adjust CC in PSW accordingly
 		CPU.setCC(value);
+		
+		CPU.jumped = false;
 	}
 
 	/**
 	 * RETC (Return From Subroutine, Conditional)
 	 * 
 	 * Springe an die Speicheradresse, die zuletzt im Stapelzeiger abgelegt worden
-	 * ist, wenn Bit 0 und 1 mit den Statusbit CCO, CC1 ï¿½bereinstimmen und
+	 * ist, wenn Bit 0 und 1 mit den Statusbit CCO, CC1 übereinstimmen und
 	 * dekrementiere den Stapelzeiger. Springe unbedingt, wenn Bit 8 und 9 auf 1
 	 * gesetzt sind.
 	 * 
@@ -558,6 +570,9 @@ public class CPU {
 			CPU.pc = CPU.popStackAddr();
 			CPU.jumped = true;
 		}
+		else {
+			CPU.jumped = false;
+		}
 	}
 	
 	/****************************/
@@ -566,13 +581,13 @@ public class CPU {
 	 * BCTR (Branch On Condition True Relative)
 	 * 
 	 * Springe an die mit Bit 0 bis 6 errechnete Speicheradresse, wenn Bit 8 und 9
-	 * mit den Statusbit CC1 und CCO ï¿½bereinstimmen. Springe unbedingt, wenn Bit 8
+	 * mit den Statusbit CC1 und CCO übereinstimmen. Springe unbedingt, wenn Bit 8
 	 * und 9 auf 1 geseszt sind.
 	 * 
 	 * @param opcode
 	 * @param param1
 	 *            Untern 7 Bit = Relative Sprung Adresse (range: -63 and +63). Bit 8
-	 *            = Flag fï¿½r indirekte Adressierung
+	 *            = Flag für indirekte Adressierung
 	 */
 	public static void process0x18_0x1B(short opcode, short param1) {
 		// (opcode & 0x03) => (bit 8 & 9)
@@ -601,7 +616,7 @@ public class CPU {
 	 * BCT (Branch On Condition True Absolute)
 	 * 
 	 * Springe an die mit Bit 0 bis 14 definierte Speicheradresse, wenn Bit 16 und
-	 * 17 mitden Statusbit CCO, CC1 ï¿½bereinstimmen. Springe unbedingt, wenn Bit 8
+	 * 17 mitden Statusbit CCO, CC1 übereinstimmen. Springe unbedingt, wenn Bit 8
 	 * und 9 auf 1 gesetzt sind.
 	 * 
 	 * @param opcode
@@ -888,8 +903,8 @@ public class CPU {
 	/**
 	 * CPSU (Clear Program Status, Upper, Masked)
 	 * 
-	 * Lï¿½sche jedes Bit des oberen Programmstatuswortes, dessen ï¿½quivalentes Bit 0
-	 * bis 7 eine 1 enthï¿½lt.
+	 * Lösche jedes Bit des oberen Programmstatuswortes, dessen äquivalentes Bit 0
+	 * bis 7 eine 1 enthält.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -901,8 +916,8 @@ public class CPU {
 	/**
 	 * CPSL (Clear Program Status, Lower, Masked)
 	 * 
-	 * Lï¿½sche jedes Bit des unteren Programmstatuswortes, dessen ï¿½quivalentes Bit 0
-	 * bis 7 eine 1 enthï¿½lt.
+	 * Lösche jedes Bit des unteren Programmstatuswortes, dessen äquivalentes Bit 0
+	 * bis 7 eine 1 enthält.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -914,8 +929,8 @@ public class CPU {
 	/**
 	 * PPSU (Preset Program Status, Upper, Masked)
 	 * 
-	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen ï¿½quivalentes
-	 * Bit 0 bis 7 eine 1 enthï¿½lt.
+	 * Setze jedes Bit des oberen Programmstatuswortes auf 1, dessen äquivalentes
+	 * Bit 0 bis 7 eine 1 enthält.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -925,10 +940,10 @@ public class CPU {
 	}
 
 	/**
-	 * PPSL (Preset Programï¿½ Status, Lower, Masked)
+	 * PPSL (Preset Program· Status, Lower, Masked)
 	 * 
-	 * Setze jedes Bit des unteren Programmstatuswortes auf 1, dessen ï¿½quivalentes
-	 * Bit 0 bis 7 eine 1 enthï¿½lt.
+	 * Setze jedes Bit des unteren Programmstatuswortes auf 1, dessen äquivalentes
+	 * Bit 0 bis 7 eine 1 enthält.
 	 * 
 	 * @param opcode
 	 * @param param1
@@ -1491,7 +1506,7 @@ public class CPU {
 
 	// == END SIMULATION METHODS ==
 
-	// Rï¿½cksprungadreï¿½speicher
+	// Rücksprungadreßspeicher
 	// stack
 	private static short[] subroutineStack = new short[8];
 	// private static Stack<Integer> returnAddrStack = new Stack<Integer>();
@@ -1792,11 +1807,13 @@ public class CPU {
 
 	// get psu
 	public static short getPSU() {
+		CPU.psu = (short) (CPU.psu & ~0x18);
 		return CPU.psu;
 	}
 
 	// set psu
 	private static void setPSU(short psu) {
+		psu = (short) (psu & ~0x18);
 		CPU.psu = psu;
 	}
 
@@ -1809,7 +1826,7 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		if (CPU.instruction == 10000)
+		if (CPU.instruction == 1000)
 			System.exit(1);
 	}
 
