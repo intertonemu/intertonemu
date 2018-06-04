@@ -823,8 +823,57 @@ public class CPU {
 
 	}
 
-	public static void process0x50_0x53(short opcode) {
+	public static void process0x50_0x53(short opcode) throws CpuInvalidRegisterException {
 		// TODO Semih
+			
+			short r = CPU.getLast2Bits(opcode);
+			short result = CPU.getRegister(r);
+			short bit_zero = (short) (result & 0x01);
+			short bit_six = (short) (result & 0x40);
+			
+			
+			result = (short) (result >> 1);
+			
+	
+		if (!(CPU.isWcSet())) {
+			if (bit_zero == 1){
+				result = (short) (result | 0x80);	
+			}
+			if (bit_zero == 0) {
+				result = (short) (result & 0x7F);
+			}
+		}
+		
+		if (CPU.isWcSet()) {
+			if (isCSet()) {
+				result = (short) (result | 0x80);
+			}
+			if (!isCSet()) {
+				result = (short) (result & 0x7F);
+			}
+			if (bit_zero == 1) {
+				CPU.setCarry(true);
+				result = (short) (result | 0x80);
+			}
+			if (bit_zero == 0) {
+				CPU.setCarry(false);
+			}
+			if (bit_six  == 1) {
+				CPU.setInterDigitCarry(true);
+			}
+			if (bit_six == 0) {
+				CPU.setInterDigitCarry(false);
+			}
+			
+			
+		}
+	
+		short new_last_bit = (short) (result & 0x80);
+		
+		if (new_last_bit != bit_zero) {
+			CPU.setOverflow(true);
+		}
+		CPU.setRegister(r, result);
 	}
 
 	public static void process0x54_0x57(short opcode, short param1) {
