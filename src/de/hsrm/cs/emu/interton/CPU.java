@@ -878,12 +878,45 @@ public class CPU {
 
 		setRegister(r, (short) (r & ((param1 & 0xFFFF00))));
 	}
-
-	// IORA
+ 
+	// IORA process0x6C_0x6F
 	public static void process0x6C_0x6F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-		short r = getLast2Bits(opcode);
+		short rx = CPU.getLast2Bits(opcode);
+		short i = CPU.getIndirectAddressing(param1);
+		short ist = CPU.getIndexControl(param1);
+		short addr_u = CPU.getAddrUpper(param1);
+		short addr_l = CPU.getAddrLower(param2);
 
-		setRegister(r, (short) (r & ((getAddrUpper(param1) & getAddrLower(param2)))));
+		int addr = CPU.getAddr(addr_u, addr_l);
+		if (i == 0x1) {
+			// indirect adressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr + 1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		switch (ist) {
+		case 0:
+			// non-indexed
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr)));
+			break;
+		case 1:
+			// indexed increment
+			CPU.r1++;
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			break;
+		case 2:
+			// indexed decrement
+			CPU.r1--;
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			break;
+		case 3:
+			// just indexed
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) | GPU.getByte(addr + CPU.r1)));
+			break;
+		}
+		
+		
 	}
 
 	/**
