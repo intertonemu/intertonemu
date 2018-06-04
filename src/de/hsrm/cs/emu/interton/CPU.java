@@ -1393,15 +1393,15 @@ public class CPU {
 	}
 
 	public static void process0xD4_0xD7(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xD8_0xDB(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xDC_0xDF(short opcode, short param1, short param2) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xE0_0xE3(short opcode) {
@@ -1458,7 +1458,7 @@ public class CPU {
 	}
 
 	public static void process0xE8_0xEB(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xEC_0xEF(short opcode, short param1, short param2) {
@@ -1466,11 +1466,11 @@ public class CPU {
 	}
 
 	public static void process0xF0_0xF3(short opcode) throws CpuInvalidRegisterException {
-		// TODO
+		//not used by PONG
 	}
 
 	public static void process0xF4_0xF7(short opcode, short param1) {
-		// TODO
+		//not used by PONG
 	}
 
 	// BDRR
@@ -1497,7 +1497,7 @@ public class CPU {
 	}
 
 	public static void process0xFC_0xFF(short opcode, short param1, short param2) {
-		// TODO
+		//not used by PONG
 	}
 
 	// == END OPCODE METHODS ==
