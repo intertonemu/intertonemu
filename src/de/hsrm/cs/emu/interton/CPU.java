@@ -824,7 +824,7 @@ public class CPU {
 	}
 
 	public static void process0x50_0x53(short opcode) {
-		// TODO
+		// TODO Semih
 	}
 
 	public static void process0x54_0x57(short opcode, short param1) {
@@ -1118,7 +1118,7 @@ public class CPU {
 	}
 
 	public static void process0x8C_0x8F(short opcode, short param1, short param2) {
-		// TODO
+		// TODO Soner
 	}
 
 	// opcode 0x90 and 0x91 are invalid
@@ -1183,11 +1183,11 @@ public class CPU {
 	}
 
 	public static void process0x9C_0x9F(short opcode, short param1, short param2) {
-		// TODO
+		// TODO Tim 
 	}
 
 	public static void process0x9F(short opcode, short param1, short param2) {
-		// TODO
+		//not used by PONG 
 	}
 
 	/* ####### 0xA0 - 0xAF ######## */
@@ -1314,7 +1314,7 @@ public class CPU {
 	}
 
 	public static void process0xBC_0xBF(short opcode) {
-		// TODO
+		// TODO Jann
 	}
 
 	public static void process0xBF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
@@ -1389,7 +1389,7 @@ public class CPU {
 	}
 
 	public static void process0xD0_0xD3(short opcode) throws CpuInvalidRegisterException {
-		// TODO
+		// TODO Tiglat 
 	}
 
 	public static void process0xD4_0xD7(short opcode, short param1) {
@@ -1405,7 +1405,7 @@ public class CPU {
 	}
 
 	public static void process0xE0_0xE3(short opcode) {
-		// TODO
+		// TODO Leo 
 	}
 
 	/**
