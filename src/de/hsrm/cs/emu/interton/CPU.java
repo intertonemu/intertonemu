@@ -1228,7 +1228,7 @@ public class CPU {
 				if (CPU.isCSet()) {
 					result = (short) (result | 0x01);
 				} else {
-				}
+				} 
 			} else {
 				result = (short) (result << 1);
 				CPU.setCarry(true);
