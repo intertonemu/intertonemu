@@ -1992,6 +1992,12 @@ public class CPU {
 		System.out.printf("R2: %02X ", CPU.getR2());
 		System.out.printf("R3: %02X ", CPU.getR3());
 		System.out.printf("PSL: %02X ", CPU.getPSL());
+		System.out.printf("$1FC6: %02X ", GPU.getByte(0x1FC6));
+		System.out.printf("$1F00: %02X ", GPU.getByte(0x1F00));
+		System.out.printf("$1F01: %02X ", GPU.getByte(0x1F01));
+		System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
+		System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
+		System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
 		System.out.print("\n");
 	}
 

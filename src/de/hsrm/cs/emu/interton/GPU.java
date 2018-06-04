@@ -17,7 +17,7 @@ public class GPU {
 	
 	static {
 		// addr bus of GPU is A0-A11 => 12 Bit, 0...4095
-		GPU.mem = new short[4096];
+		GPU.mem = new short[100000];
 	}
 	
 	// hide constructor to outside world
@@ -33,9 +33,7 @@ public class GPU {
 	
 	// is addr video space?
 	public static boolean isAddrGpu(int addr) {
-		//TODO the GPU will tell the ROM that the Addr is meant for him
-		// so we need to add a logic here
-		return false;
+		return addr >= 0x1E00;
 	}
 	
 	// is addr rom space?
