@@ -2221,8 +2221,8 @@ public class CPU {
 		CPU.process(byt);
 		CPU.instruction++;
 		if (CPU.instruction == 3000000) {
-			CPU.dumpStatus();
-			System.exit(1);
+			//CPU.dumpStatus();
+			//System.exit(1);
 		}
 	}
 
@@ -2234,7 +2234,7 @@ public class CPU {
 			// 312 lines (PAL) => TV signal
 			// 42 lines => VBLANK
 
-			if(!CPU.isSSet()) {
+			if(!CPU.isSSet() && CPU.instruction % 10000 == 0) {
 				JPanel p = GPU.loop();
 				MainFrame.getInstance().setPanel(p);
 			}
