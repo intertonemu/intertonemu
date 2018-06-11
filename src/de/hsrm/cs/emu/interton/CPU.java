@@ -3,10 +3,13 @@ package de.hsrm.cs.emu.interton;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.swing.JPanel;
+
 import de.hsrm.cs.emu.interton.exception.CpuInvalidLengthException;
 import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
 import de.hsrm.cs.emu.interton.exception.CpuStackPointerMismatchException;
+import de.hsrm.cs.emu.interton.gui.MainFrame;
 
 /**
  * A class which holds the functionalities of the Signetics 2650 CPU
@@ -2144,25 +2147,33 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		if (CPU.instruction == 1000)
+		if (CPU.instruction == 3000000) {
+			CPU.dumpStatus();
 			System.exit(1);
+		}
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
 		while (true) {
-			CPU.dumpStatus();
+//			CPU.dumpStatus();
 			Clock.waitForNextCycle();
 			CPU.step();
 			// 312 lines (PAL) => TV signal
 			// 42 lines => VBLANK
+			
+			if(!CPU.isSSet()) {
+				JPanel p = GPU.loop();
+				MainFrame.getInstance().setPanel(p);
+			}
 
 			// TODO implement that in 312/354*17746 instructions in 0
 			// and in 42/354*17746 instructions is 1
-			if (CPU.instruction % 1000 == 0) {
+			if (CPU.instruction % 10000 == 0) {
 				CPU.toggleSense();
 			}
 
 		}
+		
 	}
 
 	public static void dumpStatus() {

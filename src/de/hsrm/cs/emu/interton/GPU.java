@@ -1,6 +1,9 @@
 package de.hsrm.cs.emu.interton;
 
 import java.awt.Color;
+import java.awt.Dimension;
+
+import javax.swing.JPanel;
 
 import de.hsrm.cs.emu.interton.exception.RomAddrNotValidException;
 import de.hsrm.cs.emu.interton.exception.RomNotInitializedException;
@@ -11,7 +14,83 @@ public class GPU {
 	public static final int ADDR_BACKGROUND_COLOR = 0x1FC6;
 	public static final int ADDR_LEFT_SCORE = 0x1FC8;
 	public static final int ADDR_RIGHT_SCORE = 0x1FC9;
+	public static final int SCALE = 3;
+	
+	private static Sprite sprite1 = null;
+	private static Sprite sprite2 = null;
+	private static Sprite sprite3 = null;
+	private static Sprite sprite4 = null;
 
+	private class Sprite {
+		private boolean[][] shape = null; // byte 0 - 9
+		private int hc = 0;
+		private int hcb = 0;
+	    private int vc = 0;
+	    private int vcb = 0; // offset
+	    private int size = 1; // 1, 2, 4 or 8
+	    private Color color = null;
+		
+		private Sprite() {
+			
+		}
+		
+		public boolean[][] getShape() {
+			return shape;
+		}
+
+		public void setShape(boolean[][] shape) {
+			this.shape = shape;
+		}
+
+		public int getHc() {
+			return hc;
+		}
+
+		public void setHc(int hc) {
+			this.hc = hc;
+		}
+
+		public int getHcb() {
+			return hcb;
+		}
+
+		public void setHcb(int hcb) {
+			this.hcb = hcb;
+		}
+
+		public int getVc() {
+			return vc;
+		}
+
+		public void setVc(int vc) {
+			this.vc = vc;
+		}
+
+		public int getVcb() {
+			return vcb;
+		}
+
+		public void setVcb(int vcb) {
+			this.vcb = vcb;
+		}
+
+		public int getSize() {
+			return size;
+		}
+
+		public void setSize(int size) {
+			this.size = size;
+		}
+
+		public Color getColor() {
+			return color;
+		}
+
+		public void setColor(Color color) {
+			this.color = color;
+		}
+	};
+	
 	// GPU memory
 	private static short mem[] = null;
 	
@@ -93,6 +172,113 @@ public class GPU {
 			// TODO error
 			return 0x00;
 		}
+	}
+	
+	public static JPanel loop() {
+		JPanel p = new JPanel();
+		// Skalierung aktuell 3
+		p.setPreferredSize(new Dimension(227*SCALE*2,252*SCALE));
+		
+		calcSprite1();
+		calcSprite2();
+		calcSprite3();
+		calcSprite4();
+		
+		drawBackground(p);
+		//drawGrid();
+		drawSprite1(p);
+		drawSprite2(p);
+		drawSprite3(p);
+		drawSprite4(p);
+		drawScore(p);
+		
+		calcCollision();
+		
+		return p;
+	}
+	
+	private static void calcCollision() {
+		//calcCollisionObjectBackground();
+		calcCollisionObject1Object2();
+		calcCollisionObject1Object3();
+		calcCollisionObject1Object4();
+		calcCollisionObject2Object3();
+		calcCollisionObject2Object4();
+		calcCollisionObject3Object4();
+		
+		resetCollisionBits();
+	}
+
+	private static void resetCollisionBits() {
+		// Leo
+	}
+
+	private static void calcCollisionObject2Object4() {
+		// Tim
+	}
+
+	private static void calcCollisionObject3Object4() {
+		// Jann
+	}
+
+	private static void calcCollisionObject2Object3() {
+		// Semih
+	}
+
+	private static void calcCollisionObject1Object4() {
+		// Soner
+	}
+
+	private static void calcCollisionObject1Object3() {
+		// Tiglat
+	}
+
+	private static void calcCollisionObject1Object2() {
+		// Leo
+	}
+
+	private static void drawSprite4(JPanel p) {
+		// Tim	
+	}
+
+	private static void drawBackground(JPanel p) {
+		// Jann	
+	}
+
+	private static void drawGrid(JPanel p) {
+		// TODO
+	}
+
+	private static void drawSprite1(JPanel p) {
+		// Semih	
+	}
+
+	private static void drawSprite2(JPanel p) {
+		// Soner
+	}
+
+	private static void drawScore(JPanel p) {
+		// Tiglat
+	}
+
+	private static void drawSprite3(JPanel p) {
+		// Leo
+	}
+
+	private static void calcSprite3() {
+		// Tim
+	}
+
+	private static void calcSprite4() {
+		// Jann
+	}
+
+	private static void calcSprite1() {
+		// Semih
+	}
+
+	private static void calcSprite2() {
+		// Soner
 	}
 	
 	// get background color
