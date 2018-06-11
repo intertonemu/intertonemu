@@ -291,7 +291,7 @@ public class CPU {
 	 *             <i>kommt nicht vor</i>
 	 */
 	public static void setCC(short value) throws CpuInvalidCompareModeException {
-		CPU.setCC(value, (short) 1);
+		CPU.setCC(value, (short) 1); 
 	}
 
 	/**
