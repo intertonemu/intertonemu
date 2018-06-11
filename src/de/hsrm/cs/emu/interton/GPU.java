@@ -16,6 +16,7 @@ public class GPU {
 	public static final int ADDR_LEFT_SCORE = 0x1FC8;
 	public static final int ADDR_RIGHT_SCORE = 0x1FC9;
 	public static final int SCALE = 3;
+	public static JPanel panel = null;
 	
 	private static Sprite sprite1 = null;
 	private static Sprite sprite2 = null;
@@ -98,6 +99,7 @@ public class GPU {
 	static {
 		// addr bus of GPU is A0-A11 => 12 Bit, 0...4095
 		GPU.mem = new short[100000];
+		panel = new JPanel();
 	}
 	
 	// hide constructor to outside world
@@ -176,26 +178,26 @@ public class GPU {
 	}
 	
 	public static JPanel loop() {
-		JPanel p = new JPanel();
+		panel.removeAll();
 		// Skalierung aktuell 3
-		p.setPreferredSize(new Dimension(227*SCALE*2,252*SCALE));
+		panel.setPreferredSize(new Dimension(227*SCALE*2,252*SCALE));
 		
 		calcSprite1();
 		calcSprite2();
 		calcSprite3();
 		calcSprite4();
 		
-		drawBackground(p);
+		drawBackground(panel);
 		//drawGrid();
-		drawSprite1(p);
-		drawSprite2(p);
-		drawSprite3(p);
-		drawSprite4(p);
-		drawScore(p);
+		drawSprite1(panel);
+		drawSprite2(panel);
+		drawSprite3(panel);
+		drawSprite4(panel);
+		drawScore(panel);
 		
 		calcCollision();
 		
-		return p;
+		return panel;
 	}
 	
 	private static void calcCollision() {
