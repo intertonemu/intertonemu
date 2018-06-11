@@ -2,6 +2,7 @@ package de.hsrm.cs.emu.interton;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.Iterator;
 
 import javax.swing.JPanel;
 
@@ -218,7 +219,10 @@ public class GPU {
 	}
 
 	private static void calcCollisionObject3Object4() {
-		// Jann
+		Sprite a = sprite3;
+		Sprite b = sprite4;
+		int ax,ay,bx,by;
+		//TODO Jann
 	}
 
 	private static void calcCollisionObject2Object3() {
@@ -242,7 +246,7 @@ public class GPU {
 	}
 
 	private static void drawBackground(JPanel p) {
-		// Jann	
+		p.setBackground(GPU.getBackgroundColor());
 	}
 
 	private static void drawGrid(JPanel p) {
