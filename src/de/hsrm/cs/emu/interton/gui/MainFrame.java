@@ -12,6 +12,7 @@ public class MainFrame extends JFrame {
 
 	private MainFrame(String title) {
 		super(title);
+		setResizable(false);
 	}
 	
 	public static MainFrame getInstance() {
