@@ -223,7 +223,22 @@ public class GPU {
 	private static void calcCollisionObject3Object4() {
 		Sprite a = sprite3;
 		Sprite b = sprite4;
-		int ax,ay,bx,by;
+
+		if(Math.abs(a.hc-b.hc)<10&&Math.abs(a.vc-b.vc)<8){
+			for(int ax = 0; ax <a.shape.length;ax++){
+				for(int ay = 0; ay < a.shape[0].length;ay++){
+					if(a.shape[ax][ay]){
+						for(int bx = 0; bx < b.shape.length;bx++){
+							for(int by = 0; by < b.shape[0].length;by++){
+								if(b.shape[bx][by]){
+									
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		//TODO Jann
 	}
 
