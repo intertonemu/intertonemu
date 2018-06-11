@@ -3,13 +3,10 @@ package de.hsrm.cs.emu.interton;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.swing.JPanel;
-
 import de.hsrm.cs.emu.interton.exception.CpuInvalidLengthException;
 import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.CpuOpcodeInvalidException;
 import de.hsrm.cs.emu.interton.exception.CpuStackPointerMismatchException;
-import de.hsrm.cs.emu.interton.gui.MainFrame;
 
 /**
  * A class which holds the functionalities of the Signetics 2650 CPU
@@ -2160,11 +2157,6 @@ public class CPU {
 			CPU.step();
 			// 312 lines (PAL) => TV signal
 			// 42 lines => VBLANK
-			
-			if(!CPU.isSSet()) {
-				JPanel p = GPU.loop();
-				MainFrame.getInstance().setPanel(p);
-			}
 
 			// TODO implement that in 312/354*17746 instructions in 0
 			// and in 42/354*17746 instructions is 1
