@@ -5,6 +5,7 @@ import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
+import de.hsrm.cs.emu.interton.exception.CpuInvalidRegisterException;
 import de.hsrm.cs.emu.interton.exception.RomAddrNotValidException;
 import de.hsrm.cs.emu.interton.exception.RomNotInitializedException;
 
@@ -211,6 +212,7 @@ public class GPU {
 
 	private static void resetCollisionBits() {
 		// Leo
+		GPU.setByte(GPU.getByte(0x1FCB), (short) 0x0);
 	}
 
 	private static void calcCollisionObject2Object4() {
@@ -235,6 +237,30 @@ public class GPU {
 
 	private static void calcCollisionObject1Object2() {
 		// Leo
+		Sprite a = sprite1;
+		Sprite b = sprite2;
+		if(a.hc == b.hc || a.vc == b.vc || Math.abs(a.hc - b.hc) < 8 || Math.abs(a.vc - b.vc) < 10) {
+			
+			for(int i = 0; i < 10; i++) {
+				for(int j = 0; j < 8; j++) {
+					if(a.shape[i][j]) {
+						
+						for(int x = 0; x < 10;x++) {
+							for(int y = 0; y < 10;y++) {
+								if(b.shape[x][y]) {
+									
+								}
+								
+							}
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+		}
 	}
 
 	private static void drawSprite4(JPanel p) {
