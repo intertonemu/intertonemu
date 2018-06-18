@@ -229,7 +229,7 @@ public class GPU {
 		Sprite s4 = sprite4;
 
 		// sind die koordinaten identisch oder liegen sie im bereich
-		if ((s1.hc == s4.hc) || (s1.vc == s4.vc) || (s1.hc - s4.hc) < 8 || (s1.vc - s4.vc) < 10) {
+		if ( Math.abs(s1.hc - s4.hc) < 8 || Math.abs(s1.vc - s4.vc) < 10) { // s1.hc = 100 s4.hc=107 s1.vc=100 s4.vc=109
 
 			// nachschauen ob bits gesetzt sind (true sind)
 			for (int x = 0; x < 10; x++) {
@@ -238,11 +238,12 @@ public class GPU {
 						// in s1 ist das bit gesetzt im folgenden noch für s4 schauen
 
 						// nachschauen ob bit in s4 gesetzt ist
-						for (int i = 0; x < 10; x++) {
-							for (int j = 0; y < 8; y++) {
+						for (int i = 0; i < 10; i++) {
+							for (int j = 0; j < 8; j++) {
 								if (s4.shape[i][j]) {
-									// in s4 gesetzt --> beide sprites treffen sich
+									// in s4 gesetzt 
 									// TODO: Folge?
+									// berühren sie sich? koordinaten der beiden sprites berechnen
 								}
 							}
 						}
@@ -277,14 +278,21 @@ public class GPU {
 	private static void drawSprite1(JPanel p) {
 		// Semih
 	}
+	
+	
+	public void paintSprite2(Graphics g) {
+		g.drawRect(sprite2.hc,sprite2.vc, 1, 1);
+	}
 
 	private static void drawSprite2(JPanel p) {
 		// Soner
+		
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 8; y++) {
 				// wenn true, dann zeichen
 				if (sprite2.shape[x][y]) {
 					// TODO: zeichnen
+					//paintSprite2(g);
 				}
 			}
 		}
