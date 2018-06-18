@@ -226,7 +226,7 @@ public class GPU {
 		Sprite b = sprite4;
 		boolean[][] bshape = b.getShape();
 
-		if(Math.abs(a.hc-b.hc)<10&&Math.abs(a.vc-b.vc)<8){
+		if(Math.abs(a.hc-b.hc)<8&&Math.abs(a.vc-b.vc)<10){
 			for(int ax = 0; ax <ashape.length;ax++){
 				for(int ay = 0; ay < ashape[0].length;ay++){
 					if(ashape[ax][ay]){
@@ -237,7 +237,7 @@ public class GPU {
 									int posya = ay*SCALE*a.size+a.vc;
 									int posxb = bx*SCALE*b.size*2+b.hc;
 									int posyb = by*SCALE*b.size+b.vc;
-									if(Math.abs(posxa-posya)<=2*SCALE&&Math.abs(posxb-posyb)<=SCALE){
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
 										short colbyte = GPU.getByte(0x1FCA);
 										GPU.setByte(0x1FCA, (short)(colbyte|0x1));
 										return;
