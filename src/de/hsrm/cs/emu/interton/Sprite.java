@@ -81,6 +81,8 @@ public class Sprite extends JComponent {
 			
 			//g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setColor(this.getColor());
+			
+			g.fillRect(10, 10, 100, 100);
 
 			// Shape ssprite4 = new Rectangle(8 * 2 * SCALE, 10 * SCALE);
 			// Area a = new Area(ssprite4);

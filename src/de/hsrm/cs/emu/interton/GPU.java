@@ -117,7 +117,7 @@ public class GPU {
 		panel.add(sprite3);
 		panel.add(sprite4);
 		
-		MainFrame.getInstance().getContentPane().add(panel);
+		MainFrame.getInstance().setPanel(panel);
 		
 	}
 

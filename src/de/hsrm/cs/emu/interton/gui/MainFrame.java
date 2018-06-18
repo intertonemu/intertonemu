@@ -26,7 +26,7 @@ public class MainFrame extends JFrame {
 	}
 	
 	public void setPanel(JPanel panel) {
-		MainFrame._instance.setContentPane(panel);
+		MainFrame._instance.getContentPane().add(panel);
 		MainFrame._instance.pack();
 	}
 }
