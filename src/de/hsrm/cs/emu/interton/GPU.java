@@ -2,14 +2,18 @@ package de.hsrm.cs.emu.interton;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Area;
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.Iterator;
 
 import javax.swing.JPanel;
 
 import de.hsrm.cs.emu.interton.exception.RomAddrNotValidException;
 import de.hsrm.cs.emu.interton.exception.RomNotInitializedException;
+import de.hsrm.cs.emu.interton.gui.Sprite;
 
 // encapsulates the GPU memory and functionalities
 public class GPU {
@@ -22,78 +26,8 @@ public class GPU {
 
 	private static Sprite sprite1 = null;
 	private static Sprite sprite2 = null;
-	private static Sprite sprite3 = null;
+	public static Sprite sprite3 = new Sprite();
 	private static Sprite sprite4 = null;
-
-	private class Sprite {
-		private boolean[][] shape = null; // byte 0 - 9
-		private int hc = 0;
-		private int hcb = 0;
-		private int vc = 0;
-		private int vcb = 0; // offset
-		private int size = 1; // 1, 2, 4 or 8
-		private Color color = null;
-
-		private Sprite() {
-
-		}
-
-		public boolean[][] getShape() {
-			return shape;
-		}
-
-		public void setShape(boolean[][] shape) {
-			this.shape = shape;
-		}
-
-		public int getHc() {
-			return hc;
-		}
-
-		public void setHc(int hc) {
-			this.hc = hc;
-		}
-
-		public int getHcb() {
-			return hcb;
-		}
-
-		public void setHcb(int hcb) {
-			this.hcb = hcb;
-		}
-
-		public int getVc() {
-			return vc;
-		}
-
-		public void setVc(int vc) {
-			this.vc = vc;
-		}
-
-		public int getVcb() {
-			return vcb;
-		}
-
-		public void setVcb(int vcb) {
-			this.vcb = vcb;
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
-		}
-
-		public Color getColor() {
-			return color;
-		}
-
-		public void setColor(Color color) {
-			this.color = color;
-		}
-	};
 
 	// GPU memory
 	private static short mem[] = null;
@@ -214,6 +148,22 @@ public class GPU {
 
 	private static void calcCollisionObject2Object4() {
 		// Tim
+		boolean doBoxesIntersect = !(sprite4.getHc() > sprite2.getHc() + sprite2.width
+				|| sprite4.getHc() + sprite4.width < sprite2.getHc()
+				|| sprite4.getVc() > sprite2.getVc() + sprite2.height
+				|| sprite4.getVc() + sprite4.height < sprite2.getVc());
+
+		if (doBoxesIntersect) {
+			// TODO: 'pixel' /block-check
+
+			int leftX = Math.max(sprite2.getVc(), sprite4.getVc());
+			int rightX = Math.min(sprite2.getVc() + sprite2.width, sprite4.getVc() + sprite4.width);
+			int topY = Math.max(sprite2.getHc(), sprite4.getHc());
+			int bottomY = Math.min(sprite2.getHc() + sprite2.height, sprite4.getHc() + sprite2.height);
+
+			new Rectangle(leftX, topY, rightX - leftX, bottomY - topY);
+
+		}
 	}
 
 	private static void calcCollisionObject3Object4() {
@@ -240,7 +190,21 @@ public class GPU {
 	}
 
 	private static void drawSprite4(JPanel p) {
-		// Tim
+
+		Graphics2D g2 = (Graphics2D) p.getGraphics();
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setColor(sprite4.getColor());
+
+		// Shape ssprite4 = new Rectangle(8 * 2 * SCALE, 10 * SCALE);
+		// Area a = new Area(ssprite4);
+		// g2.draw(a);
+
+		for (int i = 0; i < sprite4.getShape().length; i++) {
+			for (int j = 0; j < sprite4.getShape()[i].length; j++) {
+				g2.drawRect(sprite4.getVc()+j, sprite4.getHc()+i, 2, 1);
+			}
+		}
+		p.repaint();
 	}
 
 	private static void drawBackground(JPanel p) {
@@ -268,13 +232,13 @@ public class GPU {
 	}
 
 	// 0xF200 bis 0xF20D
-	// Tim
-	private static void calcSprite3() {
+	// Tim Herold
+	public static void calcSprite3() {
 		boolean shape[][] = new boolean[10][8];
 		ByteBuffer buffer = ByteBuffer.allocate(8);
 		for (int i = 0; i < shape.length; i++) {
-			buffer.putShort(GPU.getByte(0x1F20));
-
+			buffer.putShort(GPU.getByte(0x1F20 + i));
+			buffer.position(0);
 			byte line = buffer.get();
 			for (int j = 0; j < shape[i].length; j++) {
 				shape[i][j] = (line & 0x1) == 0x1;
