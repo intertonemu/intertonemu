@@ -27,10 +27,10 @@ public class GPU {
 		private boolean[][] shape = null; // byte 0 - 9
 		private int hc = 0;
 		private int hcb = 0;
-	    private int vc = 0;
-	    private int vcb = 0; // offset
-	    private int size = 1; // 1, 2, 4 or 8
-	    private Color color = null;
+		private int vc = 0;
+		private int vcb = 0; // offset
+		private int size = 1; // 1, 2, 4 or 8
+		private Color color = null;
 		
 		private Sprite() {
 			
@@ -222,16 +222,26 @@ public class GPU {
 
 	private static void calcCollisionObject3Object4() {
 		Sprite a = sprite3;
+		boolean[][] ashape = a.getShape();
 		Sprite b = sprite4;
+		boolean[][] bshape = b.getShape();
 
 		if(Math.abs(a.hc-b.hc)<10&&Math.abs(a.vc-b.vc)<8){
-			for(int ax = 0; ax <a.shape.length;ax++){
-				for(int ay = 0; ay < a.shape[0].length;ay++){
-					if(a.shape[ax][ay]){
-						for(int bx = 0; bx < b.shape.length;bx++){
-							for(int by = 0; by < b.shape[0].length;by++){
-								if(b.shape[bx][by]){
-									
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.size*2+a.hc;
+									int posya = ay*SCALE*a.size+a.vc;
+									int posxb = bx*SCALE*b.size*2+b.hc;
+									int posyb = by*SCALE*b.size+b.vc;
+									if(Math.abs(posxa-posya)<=2*SCALE&&Math.abs(posxb-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|0x1));
+										return;
+									}
 								}
 							}
 						}
@@ -239,7 +249,8 @@ public class GPU {
 				}
 			}
 		}
-		//TODO Jann
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~0x1));
 	}
 
 	private static void calcCollisionObject2Object3() {
