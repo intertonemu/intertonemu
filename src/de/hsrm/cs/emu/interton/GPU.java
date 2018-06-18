@@ -230,6 +230,7 @@ public class GPU {
 
 		// sind die koordinaten identisch oder liegen sie im bereich
 		if ((s1.hc == s4.hc) || (s1.vc == s4.vc) || (s1.hc - s4.hc) < 8 || (s1.vc - s4.vc) < 10) {
+
 			// nachschauen ob bits gesetzt sind (true sind)
 			for (int x = 0; x < 10; x++) {
 				for (int y = 0; y < 8; y++) {
@@ -252,7 +253,6 @@ public class GPU {
 		}
 
 	}
-
 
 	private static void calcCollisionObject1Object3() {
 		// Tiglat
@@ -278,19 +278,17 @@ public class GPU {
 		// Semih
 	}
 
-
 	private static void drawSprite2(JPanel p) {
 		// Soner
-		for(int x=0; x<10; x++) {
-			for(int y=0;y<8;y++) {
+		for (int x = 0; x < 10; x++) {
+			for (int y = 0; y < 8; y++) {
 				// wenn true, dann zeichen
-				if(sprite2.shape[x][y]) {
+				if (sprite2.shape[x][y]) {
 					// TODO: zeichnen
 				}
 			}
 		}
 	}
-		
 
 	private static void drawScore(JPanel p) {
 		// Tiglat
@@ -318,18 +316,24 @@ public class GPU {
 		int a;
 		boolean[][] tmp = new boolean[10][8];
 
-		// schleifen durchgehen und die jeweiligen bytes überprüfen und auf true/ false setzen
-		for (int x = 0; x < 10; x++) {
-			for (int y = 0; y < 8; y++) {
-				a = GPU.getByte(0x1F20);
-				if (a == 1) {
-					tmp[x][y] = true;
-				} else {
-					tmp[x][y] = false;
+		// schleifen durchgehen und die jeweiligen bytes überprüfen und auf true/ false
+		// setzen
+		for (int i = 0; i < sprite2.shape.length; i++) {
+			a = GPU.getByte(0x1F20 + i);
+			
+			for (int x = 0; x < 10; x++) {
+				for (int y = 0; y < 8; y++) {
+					
+					if (a == 1) {
+						tmp[x][y] = true;
+					} else {
+						tmp[x][y] = false;
+					}
 				}
 			}
+
 		}
-		
+	
 		// setzten der jeweiligen bytes
 		sprite2.setShape(tmp);
 		sprite2.setHc(GPU.getByte(0x1F2A));
@@ -338,7 +342,7 @@ public class GPU {
 		sprite2.setVcb(GPU.getByte(0x1F2D));
 
 	}
-	
+
 	// get background color
 	public static Color getBackgroundColor() {
 		short byt = GPU.getMem(ADDR_BACKGROUND_COLOR);
