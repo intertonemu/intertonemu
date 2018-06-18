@@ -164,15 +164,19 @@ public class GPU {
 			new Rectangle(leftX, topY, rightX - leftX, bottomY - topY);
 
 			for (int i = 0; i < (bottomY - topY); i++) {
-				int sp2VC = topY - sprite2.getVc() + i;
-				int sp4VC = topY - sprite4.getVc() + i;
 				for (int j = 0; j < (rightX - leftX); j++) {
-					int sp2HC = leftX - sprite2.getHc() + i;
-					int sp4HC = leftX - sprite4.getHc() + i;
+
+					int sp2VC = topY - sprite2.getVc();
+					int sp2HC = leftX - sprite2.getHc();
+
+					int sp4HC = leftX - sprite4.getHc();
+					int sp4VC = topY - sprite4.getVc();
+
+					if (Math.min(Math.min(sp2VC, sp2HC), Math.min(sp4VC, sp4HC)) < 0)
+						continue;
 
 					if (sprite2.getShape()[sp2VC][sp2HC] && sprite4.getShape()[sp4VC][sp4HC]) {
 						// TODO: set collision byte
-
 					}
 
 				}
@@ -218,7 +222,9 @@ public class GPU {
 		for (int i = 0; i < sprite4.getShape().length; i++) {
 			for (int j = 0; j < sprite4.getShape()[i].length; j++) {
 				if (sprite4.getShape()[i][j])
-					g2.drawRect(sprite4.getVc() + j, sprite4.getHc() + i, 2, 1); // TODO SCALE
+					g2.drawRect((sprite4.getHc() + j * 2) * SCALE * sprite4.getSize(),
+							(sprite4.getVc() + i) * SCALE * sprite4.getSize(), 2 * SCALE * sprite4.getSize(),
+							1 * SCALE * sprite4.getSize());
 			}
 		}
 		p.repaint();
