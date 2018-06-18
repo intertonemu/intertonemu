@@ -156,12 +156,28 @@ public class GPU {
 		if (doBoxesIntersect) {
 			// TODO: 'pixel' /block-check
 
-			int leftX = Math.max(sprite2.getVc(), sprite4.getVc());
-			int rightX = Math.min(sprite2.getVc() + sprite2.width, sprite4.getVc() + sprite4.width);
-			int topY = Math.max(sprite2.getHc(), sprite4.getHc());
-			int bottomY = Math.min(sprite2.getHc() + sprite2.height, sprite4.getHc() + sprite2.height);
+			int leftX = Math.max(sprite2.getHc(), sprite4.getHc());
+			int rightX = Math.min(sprite2.getHc() + sprite2.width, sprite4.getHc() + sprite4.width);
+			int topY = Math.max(sprite2.getVc(), sprite4.getVc());
+			int bottomY = Math.min(sprite2.getVc() + sprite2.height, sprite4.getVc() + sprite2.height);
 
 			new Rectangle(leftX, topY, rightX - leftX, bottomY - topY);
+
+			for (int i = 0; i < (bottomY - topY); i++) {
+				int sp2VC = topY - sprite2.getVc() + i;
+				int sp4VC = topY - sprite4.getVc() + i;
+				for (int j = 0; j < (rightX - leftX); j++) {
+					int sp2HC = leftX - sprite2.getHc() + i;
+					int sp4HC = leftX - sprite4.getHc() + i;
+
+					if (sprite2.getShape()[sp2VC][sp2HC] && sprite4.getShape()[sp4VC][sp4HC]) {
+						// TODO: set collision byte
+
+					}
+
+				}
+
+			}
 
 		}
 	}
@@ -202,7 +218,7 @@ public class GPU {
 		for (int i = 0; i < sprite4.getShape().length; i++) {
 			for (int j = 0; j < sprite4.getShape()[i].length; j++) {
 				if (sprite4.getShape()[i][j])
-					g2.drawRect(sprite4.getVc() + j, sprite4.getHc() + i, 2, 1); //TODO SCALE
+					g2.drawRect(sprite4.getVc() + j, sprite4.getHc() + i, 2, 1); // TODO SCALE
 			}
 		}
 		p.repaint();
