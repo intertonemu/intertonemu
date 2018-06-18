@@ -2,14 +2,18 @@ package de.hsrm.cs.emu.interton;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.RenderingHints;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.Iterator;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import de.hsrm.cs.emu.interton.exception.RomAddrNotValidException;
 import de.hsrm.cs.emu.interton.exception.RomNotInitializedException;
+import de.hsrm.cs.emu.interton.gui.MainFrame;
 
 // encapsulates the GPU memory and functionalities
 public class GPU {
@@ -20,80 +24,10 @@ public class GPU {
 	public static final int SCALE = 3;
 	public static JPanel panel = null;
 
-	private static Sprite sprite1 = null;
-	private static Sprite sprite2 = null;
-	private static Sprite sprite3 = null;
-	private static Sprite sprite4 = null;
-
-	private class Sprite {
-		private boolean[][] shape = null; // byte 0 - 9
-		private int hc = 0;
-		private int hcb = 0;
-		private int vc = 0;
-		private int vcb = 0; // offset
-		private int size = 1; // 1, 2, 4 or 8
-		private Color color = null;
-
-		private Sprite() {
-
-		}
-
-		public boolean[][] getShape() {
-			return shape;
-		}
-
-		public void setShape(boolean[][] shape) {
-			this.shape = shape;
-		}
-
-		public int getHc() {
-			return hc;
-		}
-
-		public void setHc(int hc) {
-			this.hc = hc;
-		}
-
-		public int getHcb() {
-			return hcb;
-		}
-
-		public void setHcb(int hcb) {
-			this.hcb = hcb;
-		}
-
-		public int getVc() {
-			return vc;
-		}
-
-		public void setVc(int vc) {
-			this.vc = vc;
-		}
-
-		public int getVcb() {
-			return vcb;
-		}
-
-		public void setVcb(int vcb) {
-			this.vcb = vcb;
-		}
-
-		public int getSize() {
-			return size;
-		}
-
-		public void setSize(int size) {
-			this.size = size;
-		}
-
-		public Color getColor() {
-			return color;
-		}
-
-		public void setColor(Color color) {
-			this.color = color;
-		}
-	};
+	private static Sprite sprite1 = new Sprite(SCALE);
+	private static Sprite sprite2 = new Sprite(SCALE);
+	private static Sprite sprite3 = new Sprite(SCALE);
+	private static Sprite sprite4 = new Sprite(SCALE);
 
 	// GPU memory
 	private static short mem[] = null;
@@ -172,24 +106,36 @@ public class GPU {
 			return 0x00;
 		}
 	}
-
-	public static JPanel loop() {
+	
+	public static void init() {
 		panel.removeAll();
 		// Skalierung aktuell 3
 		panel.setPreferredSize(new Dimension(227 * SCALE * 2, 252 * SCALE));
+		
+		panel.add(sprite1);
+		panel.add(sprite2);
+		panel.add(sprite3);
+		panel.add(sprite4);
+		
+		MainFrame.getInstance().getContentPane().add(panel);
+		
+	}
 
+	public static JPanel loop() {
 		calcSprite1();
 		calcSprite2();
 		calcSprite3();
 		calcSprite4();
 
-		drawBackground(panel);
+		//drawBackground(panel);
 		// drawGrid();
-		drawSprite1(panel);
-		drawSprite2(panel);
-		drawSprite3(panel);
-		drawSprite4(panel);
+//		drawSprite1(panel);
+//		drawSprite2(panel);
+//		drawSprite3(panel);
+//		drawSprite4(panel);
 		drawScore(panel);
+		
+		panel.repaint();
 
 		calcCollision();
 
@@ -213,34 +159,201 @@ public class GPU {
 	}
 
 	private static void calcCollisionObject2Object4() {
-		// Tim
+		Sprite a = sprite2;
+		boolean[][] ashape = a.getShape();
+		Sprite b = sprite4;
+		boolean[][] bshape = b.getShape();
+
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|(0x1 << 1)));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~(0x1 << 1)));
 	}
 
 	private static void calcCollisionObject3Object4() {
 		Sprite a = sprite3;
+		boolean[][] ashape = a.getShape();
 		Sprite b = sprite4;
-		int ax, ay, bx, by;
-		// TODO Jann
+		boolean[][] bshape = b.getShape();
+
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|0x1));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~0x1));
 	}
 
 	private static void calcCollisionObject2Object3() {
-		// Semih
+		Sprite a = sprite2;
+		boolean[][] ashape = a.getShape();
+		Sprite b = sprite3;
+		boolean[][] bshape = b.getShape();
+
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|(0x1 << 2)));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~(0x1 << 2)));
 	}
 
 	private static void calcCollisionObject1Object4() {
-		// Soner
+		Sprite a = sprite1;
+		boolean[][] ashape = a.getShape();
+		Sprite b = sprite4;
+		boolean[][] bshape = b.getShape();
+
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|(0x1 << 3)));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~(0x1 << 3)));
 	}
 
 	private static void calcCollisionObject1Object3() {
-		// Tiglat
+		Sprite a = sprite1;
+		boolean[][] ashape = a.getShape();
+		Sprite b = sprite3;
+		boolean[][] bshape = b.getShape();
+
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|(0x1 << 4)));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~(0x1 << 4)));
 	}
 
 	private static void calcCollisionObject1Object2() {
-		// Leo
-	}
+		Sprite a = sprite1;
+		boolean[][] ashape = a.getShape();
+		Sprite b = sprite2;
+		boolean[][] bshape = b.getShape();
 
-	private static void drawSprite4(JPanel p) {
-		// Tim
+		if(Math.abs(a.getHc()-b.getHc())<8&&Math.abs(a.getVc()-b.getVc())<10){
+			for(int ax = 0; ax <ashape.length;ax++){
+				for(int ay = 0; ay < ashape[0].length;ay++){
+					if(ashape[ax][ay]){
+						for(int bx = 0; bx < bshape.length;bx++){
+							for(int by = 0; by < bshape[0].length;by++){
+								if(bshape[bx][by]){
+									int posxa = ax*SCALE*a.getSizeFactor()*2+a.getHc();
+									int posya = ay*SCALE*a.getSizeFactor()+a.getVc();
+									int posxb = bx*SCALE*b.getSizeFactor()*2+b.getHc();
+									int posyb = by*SCALE*b.getSizeFactor()+b.getVc();
+									if(Math.abs(posxa-posxb)<=2*SCALE&&Math.abs(posya-posyb)<=SCALE){
+										short colbyte = GPU.getByte(0x1FCA);
+										GPU.setByte(0x1FCA, (short)(colbyte|(0x1 << 5)));
+										return;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		short colbyte = GPU.getByte(0x1FCA);
+		GPU.setByte(0x1FCA, (short)(colbyte&~(0x1 << 5)));
 	}
 
 	private static void drawBackground(JPanel p) {
@@ -251,30 +364,18 @@ public class GPU {
 		// TODO
 	}
 
-	private static void drawSprite1(JPanel p) {
-		// Semih
-	}
-
-	private static void drawSprite2(JPanel p) {
-		// Soner
-	}
-
 	private static void drawScore(JPanel p) {
 		// Tiglat
 	}
 
-	private static void drawSprite3(JPanel p) {
-		// Leo
-	}
-
 	// 0xF200 bis 0xF20D
 	// Tim
-	private static void calcSprite3() {
+	public static void calcSprite3() {
 		boolean shape[][] = new boolean[10][8];
 		ByteBuffer buffer = ByteBuffer.allocate(8);
 		for (int i = 0; i < shape.length; i++) {
-			buffer.putShort(GPU.getByte(0x1F20));
-
+			buffer.putShort(GPU.getByte(0x1F20 + i));
+			buffer.position(0);
 			byte line = buffer.get();
 			for (int j = 0; j < shape[i].length; j++) {
 				shape[i][j] = (line & 0x1) == 0x1;
@@ -295,15 +396,87 @@ public class GPU {
 	}
 
 	private static void calcSprite4() {
-		// Jann
+		if(GPU.getByte(0x1F49)>0) {
+			//debug
+			System.out.println("Debug");
+		}
+		
+		boolean shape[][] = new boolean[10][8];
+		ByteBuffer buffer = ByteBuffer.allocate(8);
+		for (int i = 0; i < shape.length; i++) {
+			short s = GPU.getByte(0x1F40 + i);
+			if(s > 0) {
+				System.out.println("TODO");
+			}
+//			buffer.putShort(s);
+//			buffer.position(0);
+			byte line = (byte)s;
+			for (int j = 0; j < shape[i].length; j++) {
+				shape[i][j] = (line & 0x1) == 0x1;
+				line >>>= line;
+			}
+		}
+		sprite4.setShape(shape);
+
+		sprite4.setHc(GPU.getByte(0x1F4A));
+		sprite4.setHcb(GPU.getByte(0x1F4B));
+		sprite4.setVc(GPU.getByte(0x1F4C));
+		sprite4.setVcb(GPU.getByte(0x1F4D));
+
+		byte rgb = (byte) ((GPU.getByte(0x1FC2)) & 0x7);
+		sprite4.setColor(
+				new Color((rgb & 0x4) == 0x4 ? 255 : 0, (rgb & 0x2) == 0x2 ? 255 : 0, (rgb & 0x1) == 0x1 ? 255 : 0));
+
 	}
 
 	private static void calcSprite1() {
-		// Semih
+		boolean shape[][] = new boolean[10][8];
+		ByteBuffer buffer = ByteBuffer.allocate(8);
+		for (int i = 0; i < shape.length; i++) {
+			buffer.putShort(GPU.getByte(0x1F00 + i));
+			buffer.position(0);
+			byte line = buffer.get();
+			for (int j = 0; j < shape[i].length; j++) {
+				shape[i][j] = (line & 0x1) == 0x1;
+				line >>>= line;
+			}
+		}
+		sprite1.setShape(shape);
+
+		sprite1.setHc(GPU.getByte(0x1F0A));
+		sprite1.setHcb(GPU.getByte(0x1F0B));
+		sprite1.setVc(GPU.getByte(0x1F0C));
+		sprite1.setVcb(GPU.getByte(0x1F0D));
+
+		byte rgb = (byte) ((GPU.getByte(0x1FC1) >>> 3) & 0x7);
+		sprite1.setColor(
+				new Color((rgb & 0x4) == 0x4 ? 255 : 0, (rgb & 0x2) == 0x2 ? 255 : 0, (rgb & 0x1) == 0x1 ? 255 : 0));
+
 	}
 
 	private static void calcSprite2() {
-		// Soner
+		boolean shape[][] = new boolean[10][8];
+		ByteBuffer buffer = ByteBuffer.allocate(8);
+		for (int i = 0; i < shape.length; i++) {
+			buffer.putShort(GPU.getByte(0x1F10 + i));
+			buffer.position(0);
+			byte line = buffer.get();
+			for (int j = 0; j < shape[i].length; j++) {
+				shape[i][j] = (line & 0x1) == 0x1;
+				line >>>= line;
+			}
+		}
+		sprite2.setShape(shape);
+
+		sprite2.setHc(GPU.getByte(0x1F1A));
+		sprite2.setHcb(GPU.getByte(0x1F1B));
+		sprite2.setVc(GPU.getByte(0x1F1C));
+		sprite2.setVcb(GPU.getByte(0x1F1D));
+
+		byte rgb = (byte) ((GPU.getByte(0x1FC1)) & 0x7);
+		sprite2.setColor(
+				new Color((rgb & 0x4) == 0x4 ? 255 : 0, (rgb & 0x2) == 0x2 ? 255 : 0, (rgb & 0x1) == 0x1 ? 255 : 0));
+
 	}
 
 	// get background color

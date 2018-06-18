@@ -2221,12 +2221,14 @@ public class CPU {
 		CPU.process(byt);
 		CPU.instruction++;
 		if (CPU.instruction == 3000000) {
-			//CPU.dumpStatus();
+			CPU.dumpStatus();
 			//System.exit(1);
 		}
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
+		GPU.init();
+		
 		while (true) {
 //			CPU.dumpStatus();
 			Clock.waitForNextCycle();
@@ -2234,9 +2236,8 @@ public class CPU {
 			// 312 lines (PAL) => TV signal
 			// 42 lines => VBLANK
 
-			if(!CPU.isSSet() && CPU.instruction % 10000 == 0) {
-				JPanel p = GPU.loop();
-				MainFrame.getInstance().setPanel(p);
+			if(!CPU.isSSet() && CPU.instruction % 1000 == 0) {
+				GPU.loop();
 			}
 			
 			// TODO implement that in 312/354*17746 instructions in 0
@@ -2263,6 +2264,8 @@ public class CPU {
 		System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
 		System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
 		System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
+		System.out.printf("$1F48: %02X ", GPU.getByte(0x1F48));
+		System.out.printf("$1F49: %02X ", GPU.getByte(0x1F49));
 		System.out.print("\n");
 	}
 
