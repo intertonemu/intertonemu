@@ -201,7 +201,8 @@ public class GPU {
 
 		for (int i = 0; i < sprite4.getShape().length; i++) {
 			for (int j = 0; j < sprite4.getShape()[i].length; j++) {
-				g2.drawRect(sprite4.getVc()+j, sprite4.getHc()+i, 2, 1);
+				if (sprite4.getShape()[i][j])
+					g2.drawRect(sprite4.getVc() + j, sprite4.getHc() + i, 2, 1); //TODO SCALE
 			}
 		}
 		p.repaint();
