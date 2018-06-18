@@ -322,7 +322,6 @@ public class GPU {
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 8; y++) {
 				a = GPU.getByte(0x1F20);
-				a = (a & 0x1);
 				if (a == 1) {
 					tmp[x][y] = true;
 				} else {
