@@ -1196,10 +1196,8 @@ public class CPU {
 		short lvalue = CPU.getR0();
 		short rvalue = CPU.getRegister(r);
 		short result = (short) (lvalue + rvalue);
+		checkOverflow(lvalue, rvalue, result);
 		CPU.setR0((short) (result & 0xFF));
-		CPU.setCarry(result >= 0x100);
-		CPU.setOverflow(result >= 0x100);
-		CPU.setInterDigitCarry((rvalue & 0x0F) > (result & 0x0F));
 
 		if (result == 0) {
 			CPU.psl &= ~(1 << 6);
@@ -1210,6 +1208,21 @@ public class CPU {
 		} else {
 			CPU.psl &= ~(1 << 7);
 			CPU.psl |= 1 << 6;
+		}
+	}
+
+	private static void checkOverflow(short lvalue, short rvalue, short result) {
+		boolean ml = lvalue<0;
+		boolean mr = rvalue<0;
+		boolean mres = result<0;
+		if(ml==mr&&ml!=mres){
+			CPU.setOverflow(true);
+			CPU.setCarry(!mres);
+			CPU.setInterDigitCarry(!mres);
+		}else {
+			CPU.setOverflow(false);
+			CPU.setCarry(false);
+			CPU.setInterDigitCarry(true);
 		}
 	}
 
@@ -1228,9 +1241,7 @@ public class CPU {
 		rvalue = (short) (rvalue + param1);
 
 		CPU.setRegister(r, (short) (rvalue & 0xFF));
-		CPU.setCarry(rvalue >= 0x100);
-		CPU.setOverflow(rvalue >= 0x100);
-		CPU.setInterDigitCarry((rvalue_origi & 0x0F) > (rvalue & 0x0F));
+		checkOverflow(param1, rvalue_origi, rvalue);
 
 		if (rvalue == 0) {
 			CPU.psl &= ~(1 << 6);
