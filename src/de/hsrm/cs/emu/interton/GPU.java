@@ -302,7 +302,27 @@ public class GPU {
 	}
 
 	private static void calcSprite4() {
-		// Jann
+		short obj4Start = 0x1F40;
+		short infoStart = 0x1FC0;
+		Sprite obj=sprite4;
+		boolean[][] shape = new boolean[10][8];
+		for(short i = 0; i<10;i++){
+			short line = GPU.getMem(obj4Start++);
+			for(short j = 0; j<8;j++){
+				shape[i][j]=(line&(0x80>>j))!=0;
+			}
+		}
+		obj.shape=shape;
+		obj.hc = GPU.getMem(obj4Start++);
+		obj.hcb = GPU.getMem(obj4Start++);
+		obj.vc = GPU.getMem(obj4Start++);
+		obj.vcb = GPU.getMem(obj4Start++);
+		obj.size = (GPU.getMem(infoStart)&0xC0)>>6;
+		short byt = (short) (infoStart+2);
+		short r = (short) (((byt >> 2) & 0x1)*255); // bit 2 is red value of background color
+		short g = (short) (((byt >> 1) & 0x1)*255); // bit 1 is green value of background color
+		short b = (short) (((byt >> 0) & 0x1)*255);
+		obj.color = new Color(r, g, b);
 	}
 
 	private static void calcSprite1() {
