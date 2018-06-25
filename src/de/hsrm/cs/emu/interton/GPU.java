@@ -442,7 +442,7 @@ public class GPU {
 		short lscore = GPU.getMem(addr); // info: this is bcd value
 		String s_lscore = String.format("%02X", lscore);
 		// check of value contains A-F hex chars?
-		s_lscore.replaceAll("[A-F]*", " ");
+		s_lscore = s_lscore.replaceAll("[A-F]*", " ");
 		return s_lscore;
 	}
 
