@@ -22,7 +22,7 @@ public class GPU {
 		protected void paintComponent(java.awt.Graphics g) {
 
 			drawScore(g);
-			
+
 			sprite1.paintComponent(g);
 			sprite2.paintComponent(g);
 			sprite3.paintComponent(g);
@@ -372,6 +372,9 @@ public class GPU {
 
 	private static void drawScore(Graphics g) {
 		// Tiglat
+
+		g.drawString(Short.toString(getLeftScoreDez()), 100, 100);
+		g.drawString(Short.toString(getRightScoreDez()), 200, 100);
 	}
 
 	/**
@@ -432,7 +435,7 @@ public class GPU {
 		if (s_lscore.matches("[A-F]")) {
 			return -1; // don't show this number since it is not a valid dez number
 		} else {
-			return Short.parseShort(s_lscore, 10); // convert bcd to dez
+			return Short.parseShort(s_lscore, 16); // convert bcd to dez
 		}
 	}
 
@@ -446,7 +449,7 @@ public class GPU {
 		if (s_rscore.matches("[A-F]")) {
 			return -1; // don't show this number since it is not a valid dez number
 		} else {
-			return Short.parseShort(s_rscore, 10); // convert bcd to dez
+			return Short.parseShort(s_rscore, 16); // convert bcd to dez
 		}
 	}
 
