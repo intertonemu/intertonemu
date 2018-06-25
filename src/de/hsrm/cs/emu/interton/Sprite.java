@@ -79,7 +79,7 @@ public class Sprite {
 		// RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(this.getColor());
 
-		//g.fillRect(10, 10, 100, 100);
+		// g.fillRect(10, 10, 100, 100);
 
 		// Shape ssprite4 = new Rectangle(8 * 2 * SCALE, 10 * SCALE);
 		// Area a = new Area(ssprite4);
@@ -93,6 +93,7 @@ public class Sprite {
 							1 * SCALE * this.getSizeFactor());
 			}
 		}
+
 	}
 
 };
