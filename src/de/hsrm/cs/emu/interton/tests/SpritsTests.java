@@ -15,14 +15,14 @@ public class SpritsTests {
 	public static boolean O = Boolean.TRUE;
 	public static boolean shape[][] =
 			{ {_,_,_,_,_,_,_,_},
-			  {_,O,O,O,O,O,O,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,_,_,_,_,_,_},
-			  {_,O,O,O,O,O,O,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
+			  {_,_,_,O,_,_,_,_},
 			  {_,_,_,_,_,_,_,_} };
 	//@formatter:on
 
@@ -43,14 +43,14 @@ public class SpritsTests {
 		Sprite s = new Sprite(3);
 		GPU.calcSprite(s, (short) 0x1F20, ((GPU.getByte(0x1FC2) >>> 3) & 0x7));
 		assertEquals("", 0x00, GPU.getByte(0x1F20));
-		assertEquals("", 0x7E, GPU.getByte(0x1F21));
-		assertEquals("", 0x40, GPU.getByte(0x1F22));
-		assertEquals("", 0x40, GPU.getByte(0x1F23));
-		assertEquals("", 0x40, GPU.getByte(0x1F24));
-		assertEquals("", 0x40, GPU.getByte(0x1F25));
-		assertEquals("", 0x40, GPU.getByte(0x1F26));
-		assertEquals("", 0x40, GPU.getByte(0x1F27));
-		assertEquals("", 0x7E, GPU.getByte(0x1F28));
+		assertEquals("", 0x10, GPU.getByte(0x1F21));
+		assertEquals("", 0x10, GPU.getByte(0x1F22));
+		assertEquals("", 0x10, GPU.getByte(0x1F23));
+		assertEquals("", 0x10, GPU.getByte(0x1F24));
+		assertEquals("", 0x10, GPU.getByte(0x1F25));
+		assertEquals("", 0x10, GPU.getByte(0x1F26));
+		assertEquals("", 0x10, GPU.getByte(0x1F27));
+		assertEquals("", 0x10, GPU.getByte(0x1F28));
 		assertEquals("", 0x00, GPU.getByte(0x1F29));
 
 		for (int i = 0; i < s.getShape().length; i++) {

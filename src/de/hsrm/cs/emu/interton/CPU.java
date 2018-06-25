@@ -2220,7 +2220,7 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		if (CPU.instruction == 3000000) {
+		if (CPU.instruction >= 3000000) {
 			CPU.dumpStatus();
 			//System.exit(1);
 		}
@@ -2237,7 +2237,7 @@ public class CPU {
 			// 42 lines => VBLANK
 
 			if(!CPU.isSSet() && CPU.instruction % 1000 == 0) {
-				GPU.loop();
+					GPU.loop();
 			}
 			
 			// TODO implement that in 312/354*17746 instructions in 0
@@ -2251,7 +2251,9 @@ public class CPU {
 	}
 
 	public static void dumpStatus() {
-		System.out.printf("%d ", CPU.instruction);
+		GPU.setByte(0x1F0C, (short)0x70);
+		
+		/*System.out.printf("%d ", CPU.instruction);
 		System.out.printf("%04X ", CPU.pc);
 		System.out.printf("R0: %02X ", CPU.getR0());
 		System.out.printf("R1: %02X ", CPU.getR1());
@@ -2264,9 +2266,10 @@ public class CPU {
 		System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
 		System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
 		System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
+		System.out.printf("$1FC9: %02X ", GPU.getByte(0x1FC9));
 		System.out.printf("$1F48: %02X ", GPU.getByte(0x1F48));
 		System.out.printf("$1F49: %02X ", GPU.getByte(0x1F49));
-		System.out.print("\n");
+		System.out.print("\n");*/
 	}
 
 }

@@ -401,6 +401,7 @@ public class GPU {
 		}
 		sprite.setShape(shape);
 
+		//System.out.printf("%04X\n", startAddr);
 		sprite.setHc(GPU.getByte(startAddr++));
 		sprite.setHcb(GPU.getByte(startAddr++));
 		sprite.setVc(GPU.getByte(startAddr++));

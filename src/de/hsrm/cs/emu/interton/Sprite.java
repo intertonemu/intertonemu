@@ -79,11 +79,20 @@ public class Sprite {
 		// RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setColor(this.getColor());
 
-		// g.fillRect(10, 10, 100, 100);
-
 		// Shape ssprite4 = new Rectangle(8 * 2 * SCALE, 10 * SCALE);
 		// Area a = new Area(ssprite4);
 		// g2.draw(a);
+		
+//		g.fillRect(this.getHc(), this.getVc(), 100, 100);
+		
+//		if(this.getVc()==0x70) {
+//			System.out.println("Hallo");  
+//			System.out.println("Test" + this.getVc());
+//			//g.fillRect(10, 10, 100, 100);
+//			g.fillRect(99,336,6,3);
+//			System.out.println("g.fillRect("+(this.getHc() + 0 * 2) * SCALE * this.getSizeFactor()+","+(this.getVc() + 0) * SCALE * this.getSizeFactor()+","+ 2 * SCALE * this.getSizeFactor()+"," + 
+//					1 * SCALE * this.getSizeFactor()+");");
+//		}
 
 		g.fillRect(this.getHc(), this.getVc(), 100, 100);
 		
