@@ -20,6 +20,9 @@ public class GPU {
 	public static JPanel panel = new JPanel() {
 
 		protected void paintComponent(java.awt.Graphics g) {
+			
+			drawBackground(g);
+			drawGrid(g);
 
 			drawScore(g);
 			
@@ -27,14 +30,6 @@ public class GPU {
 			sprite2.paintComponent(g);
 			sprite3.paintComponent(g);
 			sprite4.paintComponent(g);
-
-			// drawBackground(panel);
-			// drawGrid();
-			// drawSprite1(panel);
-			// drawSprite2(panel);
-			// drawSprite3(panel);
-			// drawSprite4(panel);
-			// drawScore(panel);
 
 		};
 	};
@@ -363,7 +358,8 @@ public class GPU {
 	}
 
 	private static void drawBackground(Graphics g) {
-		// p.setBackground(GPU.getBackgroundColor());
+		g.setColor(GPU.getBackgroundColor());
+		g.fillRect(0, 0, 1920, 1080);
 	}
 
 	private static void drawGrid(Graphics g) {
@@ -402,7 +398,7 @@ public class GPU {
 
 		// byte rgb = (byte) ((GPU.getByte(0x1FC1)) & 0x7);
 		sprite.setColor(
-				new Color((rgb & 0x4) == 0x4 ? 255 : 0, (rgb & 0x2) == 0x2 ? 255 : 0, (rgb & 0x1) == 0x1 ? 255 : 0));
+				new Color((rgb & 0x4) == 0x4 ? 0 : 255, (rgb & 0x2) == 0x2 ? 0 : 255, (rgb & 0x1) == 0x1 ? 0 : 255));
 
 	}
 
