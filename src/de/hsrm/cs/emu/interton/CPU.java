@@ -862,11 +862,15 @@ public class CPU {
 
 	/* ########## 0x40 - 0x4F ########## */
 	// ANDZ bit 0 und 1 mit register R0 verunden
-	public static void process0x40_0x43(short opcode) throws CpuInvalidRegisterException {
+	public static void process0x40_0x43(short opcode) throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
+		// get register which should be ANDed with R0
 		short bit0_1 = (short) (opcode & 0x3);
-		short tmp = (short) (CPU.getRegister(0) & bit0_1);
-
-		CPU.setRegister(CPU.getRegister(0), tmp);
+		// AND specified register with R0
+		short tmp = (short) (CPU.getRegister(0) & CPU.getRegister(bit0_1));
+		// set result to R0
+		CPU.setRegister(0, tmp);
+		
+		setCC(CPU.getRegister(0));
 	}
 
 	/**
@@ -890,7 +894,7 @@ public class CPU {
 	}
 
 	// ANDR bit0-6 mit bit8-9 verunden (IN WELCHES REG SPEICHERN?)
-	public static void process0x48_0x4B(short opcode) throws CpuInvalidRegisterException {
+	public static void process0x48_0x4B(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_6 = (short) (opcode & 0x7F);
 		short bit8_9 = (short) (opcode & 0x300);
 		short tmp = (short) (bit0_6 & bit8_9);
@@ -1440,15 +1444,21 @@ public class CPU {
 
 	/* ####### 0xA0 - 0xAF ######## */
 	// SUBZ addiere bit 0 und bit 1 auf register 0
-	public static void process0xA0_0xA3(short opcode) throws CpuInvalidRegisterException {
-		short bit0 = (short) (opcode & 0x1);
-		short bit1 = (short) (opcode & 0x2);
-		short tmp = (short) (bit0 + bit1);
+	public static void process0xA0_0xA3(short opcode) throws CpuInvalidRegisterException, CpuInvalidCompareModeException {
+		short r = CPU.getLast2Bits(opcode);
+		short r0_val = CPU.getRegister(0);
+		
+		r0_val = (short)(r0_val - r);
 
-		CPU.setRegister(CPU.getRegister(0), tmp);
+		CPU.setRegister(0, r0_val);
+		
+		CPU.setCC(r0_val);
+		
+		//C, IDC und OVF not set correctly
 	}
 
 	// SUBI addiere bit 0-7 auf bit 8 und bit 9
+	// wahrshceinlich falshc
 	public static void process0xA4_0xA7(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_7 = (short) (opcode & 0xFF); // 255
 		short bit8 = (short) (opcode & 0x100); // 256
@@ -1462,6 +1472,7 @@ public class CPU {
 	}
 
 	// SUBR addiere bit 0-6 auf bit 8 und 9
+	// falsch aus meiner Sicht
 	public static void process0xA8_0xAB(short opcode, short param1) throws CpuInvalidRegisterException {
 		short bit0_6 = (short) (opcode & 0x7F); // 127
 		short bit8 = (short) (opcode & 0x100); // 256
@@ -1475,6 +1486,7 @@ public class CPU {
 	}
 
 	// SUBA addiere bit 0-12 in bit 16 und 17
+	// falsch
 	public static void process0xAC_0xAF(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
 		short bit0_12 = (short) (opcode & 0x1FFF); // 8191(12 bit)
 		short bit16_17 = (short) (opcode & 0x30000); // (16 bit)
