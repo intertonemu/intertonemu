@@ -56,7 +56,7 @@ public class SpritsTests {
 		for (int i = 0; i < s.getShape().length; i++) {
 			for (int j = 0; j < s.getShape()[i].length; j++) {
 				if (s.getShape()[i][j]) {
-					assertTrue(shape[i][j]);
+					assertTrue("i:" + i + " j:" + j, shape[i][j]);
 				}
 			}
 		}

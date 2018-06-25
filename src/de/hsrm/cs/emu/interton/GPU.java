@@ -390,7 +390,6 @@ public class GPU {
 	 *            Sprite 4 = 0x1F40 rgb = ((GPU.getByte(0x1FC2)) & 0x7) <br>
 	 * @param rgb
 	 */
-
 	public static void calcSprite(Sprite sprite, short startAddr, int rgb) {
 		boolean shape[][] = new boolean[10][8];
 		for (int i = 0; i < shape.length; i++) {
@@ -404,17 +403,11 @@ public class GPU {
 
 		//System.out.printf("%04X\n", startAddr);
 		sprite.setHc(GPU.getByte(startAddr++));
-		
 		sprite.setHcb(GPU.getByte(startAddr++));
-		//System.out.printf("%04X\n", startAddr);
 		sprite.setVc(GPU.getByte(startAddr++));
-		
-		if(sprite.getVc()==0x70) {
-			System.out.println("Hallo");
-		}
-		
 		sprite.setVcb(GPU.getByte(startAddr++));
-		//System.out.printf("%04X\n", startAddr);
+		
+		
 
 		// byte rgb = (byte) ((GPU.getByte(0x1FC1)) & 0x7);
 		sprite.setColor(
