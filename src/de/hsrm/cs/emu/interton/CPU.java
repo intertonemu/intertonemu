@@ -939,7 +939,7 @@ public class CPU {
 		case 1:
 			// indexed increment
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
-			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			result = (short) (0xFF & GPU.getByte(addr & CPU.getRegister(rx)));
 			
 			CPU.setR0(result);
 			CPU.setCC(result);
@@ -947,14 +947,14 @@ public class CPU {
 		case 2:
 			// indexed decrement
 			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
-			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			result = (short) (0xFF & GPU.getByte(addr & CPU.getRegister(rx)));
 			
 			CPU.setR0(result);
 			CPU.setCC(result);
 			break;
 		case 3:
 			// just indexed
-			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			result = (short) (0xFF & GPU.getByte(addr & CPU.getRegister(rx)));
 			
 			CPU.setR0(result);
 			CPU.setCC(result);
