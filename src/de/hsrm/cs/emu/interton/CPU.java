@@ -294,7 +294,7 @@ public class CPU {
 	 *             <i>kommt nicht vor</i>
 	 */
 	public static void setCC(short value) throws CpuInvalidCompareModeException {
-		CPU.setCC(value, (short) 1); 
+		CPU.setCC(value, (short) 1);
 	}
 
 	/**
@@ -899,12 +899,67 @@ public class CPU {
 	}
 
 	// ANDA bit0-7 mit bit16-17 verunden (IN WELCHES REG SPEICHERN?)
-	public static void process0x4C_0x4F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
-//		short bit0_12 = (short) (opcode & 0x1FFF);
-//		short bit16_17 = (short) (opcode & 0x30000);
-//		short tmp = (short) (bit0_12 & bit16_17);
-//
-//		CPU.setRegister(bit0_12, tmp);
+	public static void process0x4C_0x4F(short opcode, short param1, short param2)
+			throws CpuInvalidRegisterException, CpuInvalidCompareModeException, CpuOpcodeInvalidException {
+
+		// get target register or index register
+		short rx = CPU.getLast2Bits(opcode);
+		// get if indirect addressing is used
+		short i = CPU.getIndirectAddressing(param1);
+		// get index control
+		short ic = CPU.getIndexControl(param1);
+		// get upper address part
+		short addr_u = CPU.getAddrUpper(param1);
+		// get lower address part
+		short addr_l = CPU.getAddrLower(param2);
+		// combine address to full address
+		int addr = CPU.getAddr(addr_u, addr_l);
+
+		if (i == 0x1) {
+			// indirect addressing
+			// get value at address and save as new address
+			addr_u = GPU.getByte(addr);
+			addr_l = GPU.getByte(addr + 1);
+			addr = CPU.getAddr(addr_u, addr_l);
+		}
+		
+
+		short result = 0;
+		switch (ic) {
+		case 0:
+			// non-indexed
+			result = (short) (CPU.getRegister(rx) & GPU.getByte(addr));
+			CPU.setRegister(rx, result);
+			CPU.setCC(result);
+			break;
+		case 1:
+			// indexed increment
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) + 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			
+			CPU.setR0(result);
+			CPU.setCC(result);
+			break;
+		case 2:
+			// indexed decrement
+			CPU.setRegister(rx, (short) (CPU.getRegister(rx) - 1));
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			
+			CPU.setR0(result);
+			CPU.setCC(result);
+			break;
+		case 3:
+			// just indexed
+			result = (short) (0xFF & GPU.getByte(addr + CPU.getRegister(rx)));
+			
+			CPU.setR0(result);
+			CPU.setCC(result);
+			break;
+		default:
+			throw new CpuOpcodeInvalidException();
+		}
+
+		CPU.jumped = false;
 
 	}
 
@@ -1709,7 +1764,7 @@ public class CPU {
 
 	public static void process0xDC_0xDF(short opcode, short param1, short param2) {
 		// not used by PONG
-	} 
+	}
 
 	// COMZ Compare to Register Zero Arithmetic/Logical
 	public static void process0xE0_0xE3(short opcode)
@@ -2222,30 +2277,30 @@ public class CPU {
 		CPU.instruction++;
 		if (CPU.instruction >= 3500000) {
 			CPU.dumpStatus();
-			GPU.setByte(0x1E8B, (short)0x40);
-			//System.exit(1);
+			GPU.setByte(0x1E8B, (short) 0x40);
+			// System.exit(1);
 		}
 		if (CPU.instruction >= 4000000) {
 			CPU.dumpStatus();
-			GPU.setByte(0x1E8B, (short)0x0F);
-			//System.exit(1);
+			GPU.setByte(0x1E8B, (short) 0x0F);
+			// System.exit(1);
 		}
 	}
 
 	public static void start() throws CpuOpcodeInvalidException, CpuInvalidLengthException {
 		GPU.init();
-		
+
 		while (true) {
-//			CPU.dumpStatus();
+			// CPU.dumpStatus();
 			Clock.waitForNextCycle();
 			CPU.step();
 			// 312 lines (PAL) => TV signal
 			// 42 lines => VBLANK
 
-			if(!CPU.isSSet() && CPU.instruction % 1000 == 0) {
-					GPU.loop();
+			if (!CPU.isSSet() && CPU.instruction % 1000 == 0) {
+				GPU.loop();
 			}
-			
+
 			// TODO implement that in 312/354*17746 instructions in 0
 			// and in 42/354*17746 instructions is 1
 			if (CPU.instruction % 10000 == 0) {
@@ -2253,29 +2308,29 @@ public class CPU {
 			}
 
 		}
-		
+
 	}
 
 	public static void dumpStatus() {
-		GPU.setByte(0x1F0C, (short)0x70);
-		
-		/*System.out.printf("%d ", CPU.instruction);
-		System.out.printf("%04X ", CPU.pc);
-		System.out.printf("R0: %02X ", CPU.getR0());
-		System.out.printf("R1: %02X ", CPU.getR1());
-		System.out.printf("R2: %02X ", CPU.getR2());
-		System.out.printf("R3: %02X ", CPU.getR3());
-		System.out.printf("PSL: %02X ", CPU.getPSL());
-		System.out.printf("$1FC6: %02X ", GPU.getByte(0x1FC6));
-		System.out.printf("$1F00: %02X ", GPU.getByte(0x1F00));
-		System.out.printf("$1F01: %02X ", GPU.getByte(0x1F01));
-		System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
-		System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
-		System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
-		System.out.printf("$1FC9: %02X ", GPU.getByte(0x1FC9));
-		System.out.printf("$1F48: %02X ", GPU.getByte(0x1F48));
-		System.out.printf("$1F49: %02X ", GPU.getByte(0x1F49));
-		System.out.print("\n");*/
+		GPU.setByte(0x1F0C, (short) 0x70);
+
+		/*
+		 * System.out.printf("%d ", CPU.instruction); System.out.printf("%04X ",
+		 * CPU.pc); System.out.printf("R0: %02X ", CPU.getR0());
+		 * System.out.printf("R1: %02X ", CPU.getR1()); System.out.printf("R2: %02X ",
+		 * CPU.getR2()); System.out.printf("R3: %02X ", CPU.getR3());
+		 * System.out.printf("PSL: %02X ", CPU.getPSL());
+		 * System.out.printf("$1FC6: %02X ", GPU.getByte(0x1FC6));
+		 * System.out.printf("$1F00: %02X ", GPU.getByte(0x1F00));
+		 * System.out.printf("$1F01: %02X ", GPU.getByte(0x1F01));
+		 * System.out.printf("$1F0C: %02X ", GPU.getByte(0x1F0C));
+		 * System.out.printf("$1F0A: %02X ", GPU.getByte(0x1F0A));
+		 * System.out.printf("$1FC1: %02X ", GPU.getByte(0x1FC1));
+		 * System.out.printf("$1FC9: %02X ", GPU.getByte(0x1FC9));
+		 * System.out.printf("$1F48: %02X ", GPU.getByte(0x1F48));
+		 * System.out.printf("$1F49: %02X ", GPU.getByte(0x1F49));
+		 * System.out.print("\n");
+		 */
 	}
 
 }
