@@ -395,9 +395,6 @@ public class GPU {
 		boolean shape[][] = new boolean[10][8];
 		for (int i = 0; i < shape.length; i++) {
 			byte line = (byte) GPU.getByte(startAddr++);
-			if(line==0x10) {
-				System.out.println("Hallo");
-			}
 			for (int j = 0; j < shape[i].length; j++) {
 				shape[i][j] = (line & 0x1) == 0x1;
 				line >>>= 1;
