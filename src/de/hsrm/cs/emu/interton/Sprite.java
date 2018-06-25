@@ -94,7 +94,7 @@ public class Sprite {
 //					1 * SCALE * this.getSizeFactor()+");");
 //		}
 
-		g.fillRect(this.getHc(), this.getVc(), 100, 100);
+		//g.fillRect(this.getHc(), this.getVc(), 100, 100);
 		
 		for (int i = 0; i < this.getShape().length; i++) {
 			for (int j = 0; j < this.getShape()[i].length; j++) {

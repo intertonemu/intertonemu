@@ -899,12 +899,12 @@ public class CPU {
 	}
 
 	// ANDA bit0-7 mit bit16-17 verunden (IN WELCHES REG SPEICHERN?)
-	public static void process0x4C_0x4F(short opcode) throws CpuInvalidRegisterException {
-		short bit0_12 = (short) (opcode & 0x1FFF);
-		short bit16_17 = (short) (opcode & 0x30000);
-		short tmp = (short) (bit0_12 & bit16_17);
-
-		CPU.setRegister(bit0_12, tmp);
+	public static void process0x4C_0x4F(short opcode, short param1, short param2) throws CpuInvalidRegisterException {
+//		short bit0_12 = (short) (opcode & 0x1FFF);
+//		short bit16_17 = (short) (opcode & 0x30000);
+//		short tmp = (short) (bit0_12 & bit16_17);
+//
+//		CPU.setRegister(bit0_12, tmp);
 
 	}
 
@@ -2220,8 +2220,14 @@ public class CPU {
 		short byt = GPU.getByte(CPU.getPC());
 		CPU.process(byt);
 		CPU.instruction++;
-		if (CPU.instruction >= 3000000) {
+		if (CPU.instruction >= 3500000) {
 			CPU.dumpStatus();
+			GPU.setByte(0x1E8B, (short)0x40);
+			//System.exit(1);
+		}
+		if (CPU.instruction >= 4000000) {
+			CPU.dumpStatus();
+			GPU.setByte(0x1E8B, (short)0x0F);
 			//System.exit(1);
 		}
 	}
