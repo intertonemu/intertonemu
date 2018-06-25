@@ -373,8 +373,8 @@ public class GPU {
 	private static void drawScore(Graphics g) {
 		// Tiglat
 
-		g.drawString(Short.toString(getLeftScoreDez()), 100, 100);
-		g.drawString(Short.toString(getRightScoreDez()), 200, 100);
+		g.drawString(getLeftScoreDez(), 100, 100);
+		g.drawString(getRightScoreDez(), 200, 100);
 	}
 
 	/**
@@ -425,32 +425,22 @@ public class GPU {
 		}
 	}
 
-	// get left score as dez number
-	public static short getLeftScoreDez() {
-		short lscore = GPU.getMem(ADDR_LEFT_SCORE); // info: this is bcd value
-
-		// convert to dez
-		String s_lscore = String.format("%02X", lscore);
-		// check of value contains A-F hex chars?
-		if (s_lscore.matches("[A-F]")) {
-			return -1; // don't show this number since it is not a valid dez number
-		} else {
-			return Short.parseShort(s_lscore, 16); // convert bcd to dez
-		}
+	// get left score as String
+	public static String getLeftScoreDez() {
+		return getScoreAt(ADDR_LEFT_SCORE);
 	}
 
-	// get right score as dez number
-	public static short getRightScoreDez() {
-		short rscore = GPU.getMem(ADDR_RIGHT_SCORE); // info: this is bcd value
+	// get right score as String
+	public static String getRightScoreDez() {
+		return getScoreAt(ADDR_RIGHT_SCORE);
+	}
 
-		// convert to dez
-		String s_rscore = String.format("%02X", rscore);
+	private static String getScoreAt(int addr) {
+		short lscore = GPU.getMem(addr); // info: this is bcd value
+		String s_lscore = String.format("%02X", lscore);
 		// check of value contains A-F hex chars?
-		if (s_rscore.matches("[A-F]")) {
-			return -1; // don't show this number since it is not a valid dez number
-		} else {
-			return Short.parseShort(s_rscore, 16); // convert bcd to dez
-		}
+		s_lscore.replaceAll("[A-F]*", " ");
+		return s_lscore;
 	}
 
 }
