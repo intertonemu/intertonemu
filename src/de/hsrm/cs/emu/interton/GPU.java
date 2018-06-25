@@ -25,7 +25,7 @@ public class GPU {
 			drawGrid(g);
 
 			drawScore(g);
-
+			
 			sprite1.paintComponent(g);
 			sprite2.paintComponent(g);
 			sprite3.paintComponent(g);
@@ -390,23 +390,32 @@ public class GPU {
 	 *            Sprite 4 = 0x1F40 rgb = ((GPU.getByte(0x1FC2)) & 0x7) <br>
 	 * @param rgb
 	 */
-	private static void calcSprite(Sprite sprite, short startAddr, int rgb) {
-		//System.out.printf("%04X\n", startAddr);
+
+	public static void calcSprite(Sprite sprite, short startAddr, int rgb) {
 		boolean shape[][] = new boolean[10][8];
 		for (int i = 0; i < shape.length; i++) {
 			byte line = (byte) GPU.getByte(startAddr++);
+			if(line==0x10) {
+				System.out.println("Hallo");
+			}
 			for (int j = 0; j < shape[i].length; j++) {
 				shape[i][j] = (line & 0x1) == 0x1;
-				line >>>= line;
+				line >>>= 1;
 			}
 		}
 		sprite.setShape(shape);
 
 		//System.out.printf("%04X\n", startAddr);
 		sprite.setHc(GPU.getByte(startAddr++));
+		
 		sprite.setHcb(GPU.getByte(startAddr++));
 		//System.out.printf("%04X\n", startAddr);
 		sprite.setVc(GPU.getByte(startAddr++));
+		
+		if(sprite.getVc()==0x70) {
+			System.out.println("Hallo");
+		}
+		
 		sprite.setVcb(GPU.getByte(startAddr++));
 		//System.out.printf("%04X\n", startAddr);
 
