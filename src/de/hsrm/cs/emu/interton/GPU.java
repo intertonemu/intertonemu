@@ -20,7 +20,7 @@ public class GPU {
 	public static JPanel panel = new JPanel() {
 
 		protected void paintComponent(java.awt.Graphics g) {
-			
+
 			drawBackground(g);
 			drawGrid(g);
 
@@ -369,8 +369,15 @@ public class GPU {
 	private static void drawScore(Graphics g) {
 		// Tiglat
 
+		// save color
+		Color c = g.getColor();
+
+		g.setColor(Color.WHITE);
 		g.drawString(getLeftScoreDez(), 100, 100);
 		g.drawString(getRightScoreDez(), 200, 100);
+
+		// reset color
+		g.setColor(c);
 	}
 
 	/**
