@@ -396,7 +396,7 @@ public class GPU {
 			byte line = (byte) GPU.getByte(startAddr++);
 			for (int j = 0; j < shape[i].length; j++) {
 				shape[i][j] = (line & 0x1) == 0x1;
-				line >>>= line;
+				line >>>= 1;
 			}
 		}
 		sprite.setShape(shape);
@@ -405,6 +405,8 @@ public class GPU {
 		sprite.setHcb(GPU.getByte(startAddr++));
 		sprite.setVc(GPU.getByte(startAddr++));
 		sprite.setVcb(GPU.getByte(startAddr++));
+		
+		
 
 		// byte rgb = (byte) ((GPU.getByte(0x1FC1)) & 0x7);
 		sprite.setColor(

@@ -85,6 +85,8 @@ public class Sprite {
 		// Area a = new Area(ssprite4);
 		// g2.draw(a);
 
+		g.fillRect(this.getHc(), this.getVc(), 100, 100);
+		
 		for (int i = 0; i < this.getShape().length; i++) {
 			for (int j = 0; j < this.getShape()[i].length; j++) {
 				if (this.getShape()[i][j])
